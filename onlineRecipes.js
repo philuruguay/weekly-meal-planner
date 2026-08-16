@@ -1,107 +1,79 @@
-/*
-=========================================================
-ONLINE RECIPE SEARCH
-FREE THEMEALDB VERSION
-
-COMBINATION MATCHING VERSION
-
-This version:
-- Searches every fridge ingredient
-- Combines results from all searches
-- Checks the actual recipe ingredients
-- Supports ingredient aliases
-- Prioritizes recipes using ALL fridge ingredients
-- Gives extra weight to combinations of ingredients
-- Rewards recipes using several fridge ingredients together
-- Penalizes recipes that only match one ingredient
-- Returns up to 48 recipes
-=========================================================
-*/
-
+/* =========================================================
+   ONLINE RECIPES
+   Free online recipe search using TheMealDB
+   Only returns recipes with calorie information
+   ========================================================= */
 
 const THE_MEAL_DB_BASE =
   "https://www.themealdb.com/api/json/v1/1";
 
 
-/* ========================================================
-   INGREDIENT GROUPS
-   ======================================================== */
+/* =========================================================
+   INGREDIENT ALIASES
+   ========================================================= */
 
-const ingredientGroups = {
+const ingredientAliases = {
+
+  mushrooms: [
+    "mushroom",
+    "mushrooms"
+  ],
+
+  mushroom: [
+    "mushroom",
+    "mushrooms"
+  ],
 
   chicken: [
     "chicken",
     "chicken breast",
     "chicken breasts",
     "chicken thigh",
-    "chicken thighs",
-    "chicken fillet",
-    "chicken fillets",
-    "roast chicken"
-  ],
-
-  mushroom: [
-    "mushroom",
-    "mushrooms",
-    "button mushroom",
-    "button mushrooms",
-    "chestnut mushroom",
-    "chestnut mushrooms",
-    "portobello mushroom",
-    "portobello mushrooms"
+    "chicken thighs"
   ],
 
   rice: [
     "rice",
     "basmati rice",
     "brown rice",
-    "white rice",
-    "long grain rice",
-    "jasmine rice"
-  ],
-
-  broccoli: [
-    "broccoli",
-    "broccoli florets"
-  ],
-
-  spinach: [
-    "spinach",
-    "baby spinach"
-  ],
-
-  potato: [
-    "potato",
-    "potatoes",
-    "baby potato",
-    "baby potatoes"
-  ],
-
-  sweet_potato: [
-    "sweet potato",
-    "sweet potatoes"
+    "white rice"
   ],
 
   tomato: [
     "tomato",
-    "tomatoes",
-    "cherry tomato",
-    "cherry tomatoes",
-    "plum tomato",
-    "plum tomatoes"
+    "tomatoes"
+  ],
+
+  tomatoes: [
+    "tomato",
+    "tomatoes"
+  ],
+
+  potato: [
+    "potato",
+    "potatoes"
+  ],
+
+  potatoes: [
+    "potato",
+    "potatoes"
   ],
 
   onion: [
     "onion",
-    "onions",
-    "red onion",
-    "red onions",
-    "white onion",
-    "yellow onion",
-    "spring onion",
-    "green onion",
-    "scallion",
-    "scallions"
+    "onions"
+  ],
+
+  garlic: [
+    "garlic"
+  ],
+
+  broccoli: [
+    "broccoli"
+  ],
+
+  spinach: [
+    "spinach"
   ],
 
   carrot: [
@@ -109,67 +81,29 @@ const ingredientGroups = {
     "carrots"
   ],
 
-  pepper: [
-    "pepper",
-    "peppers",
-    "bell pepper",
-    "bell peppers",
-    "red pepper",
-    "red peppers",
-    "green pepper",
-    "green peppers",
-    "yellow pepper",
-    "yellow peppers"
-  ],
-
-  salmon: [
-    "salmon",
-    "salmon fillet",
-    "salmon fillets"
-  ],
-
-  tuna: [
-    "tuna",
-    "tuna steak",
-    "tuna steaks",
-    "canned tuna"
-  ],
-
   beef: [
     "beef",
-    "beef steak",
-    "steak",
-    "steaks",
     "ground beef",
-    "beef mince",
     "minced beef"
+  ],
+
+  steak: [
+    "steak",
+    "beef steak"
   ],
 
   turkey: [
     "turkey",
-    "turkey breast",
-    "ground turkey",
-    "turkey mince"
-  ],
-
-  pork: [
-    "pork",
-    "pork chop",
-    "pork chops",
-    "pork loin",
-    "pork tenderloin"
-  ],
-
-  bacon: [
-    "bacon",
-    "back bacon"
+    "ground turkey"
   ],
 
   shrimp: [
     "shrimp",
-    "prawn",
-    "prawns",
-    "king prawns"
+    "prawns"
+  ],
+
+  salmon: [
+    "salmon"
   ],
 
   egg: [
@@ -177,20 +111,23 @@ const ingredientGroups = {
     "eggs"
   ],
 
-  yogurt: [
-    "yogurt",
-    "yoghurt",
-    "greek yogurt",
-    "greek yoghurt"
+  eggs: [
+    "egg",
+    "eggs"
   ],
 
   cheese: [
-    "cheese",
-    "cheddar",
-    "cheddar cheese",
+    "cheese"
+  ],
+
+  mozzarella: [
     "mozzarella",
-    "parmesan",
-    "feta"
+    "mozzarella cheese"
+  ],
+
+  cheddar: [
+    "cheddar",
+    "cheddar cheese"
   ],
 
   avocado: [
@@ -198,26 +135,51 @@ const ingredientGroups = {
     "avocados"
   ],
 
-  zucchini: [
-    "zucchini",
-    "courgette",
-    "courgettes"
+  cucumber: [
+    "cucumber",
+    "cucumbers"
   ],
 
-  asparagus: [
-    "asparagus"
+  pepper: [
+    "pepper",
+    "bell pepper",
+    "bell peppers"
   ],
 
-  cauliflower: [
-    "cauliflower"
+  peppers: [
+    "pepper",
+    "bell pepper",
+    "bell peppers"
+  ],
+
+  pasta: [
+    "pasta",
+    "spaghetti",
+    "penne",
+    "linguine",
+    "macaroni"
+  ],
+
+  noodles: [
+    "noodles",
+    "noodle"
+  ],
+
+  bread: [
+    "bread"
+  ],
+
+  tortilla: [
+    "tortilla",
+    "tortillas"
   ],
 
   beans: [
     "bean",
     "beans",
-    "green beans",
+    "kidney beans",
     "black beans",
-    "kidney beans"
+    "white beans"
   ],
 
   chickpeas: [
@@ -226,67 +188,13 @@ const ingredientGroups = {
     "garbanzo beans"
   ],
 
-  lentils: [
-    "lentil",
-    "lentils"
+  corn: [
+    "corn"
   ],
 
-  quinoa: [
-    "quinoa"
-  ],
-
-  pasta: [
-    "pasta",
-    "spaghetti",
-    "penne",
-    "macaroni",
-    "linguine",
-    "fettuccine",
-    "noodles"
-  ],
-
-  oats: [
-    "oat",
-    "oats",
-    "rolled oats",
-    "porridge oats"
-  ],
-
-  bread: [
-    "bread",
-    "wholemeal bread",
-    "whole wheat bread",
-    "white bread"
-  ],
-
-  apple: [
-    "apple",
-    "apples"
-  ],
-
-  banana: [
-    "banana",
-    "bananas"
-  ],
-
-  strawberry: [
-    "strawberry",
-    "strawberries"
-  ],
-
-  blueberry: [
-    "blueberry",
-    "blueberries"
-  ],
-
-  mango: [
-    "mango",
-    "mangoes"
-  ],
-
-  pineapple: [
-    "pineapple",
-    "pineapples"
+  peas: [
+    "pea",
+    "peas"
   ],
 
   lemon: [
@@ -299,616 +207,408 @@ const ingredientGroups = {
     "limes"
   ],
 
-  garlic: [
-    "garlic",
-    "garlic cloves"
-  ],
-
-  ginger: [
-    "ginger",
-    "fresh ginger"
-  ]
-
-};
-
-
-/* ========================================================
-   SEARCH TERMS
-   ======================================================== */
-
-const searchTerms = {
-
-  chicken: [
-    "chicken"
-  ],
-
-  mushroom: [
-    "mushroom",
-    "mushrooms"
-  ],
-
-  rice: [
-    "rice"
-  ],
-
-  broccoli: [
-    "broccoli"
-  ],
-
-  spinach: [
-    "spinach"
-  ],
-
-  potato: [
-    "potato",
-    "potatoes"
-  ],
-
-  sweet_potato: [
-    "sweet potato"
-  ],
-
-  tomato: [
-    "tomato",
-    "tomatoes"
-  ],
-
-  onion: [
-    "onion"
-  ],
-
-  carrot: [
-    "carrot"
-  ],
-
-  pepper: [
-    "pepper"
-  ],
-
-  salmon: [
-    "salmon"
-  ],
-
-  tuna: [
-    "tuna"
-  ],
-
-  beef: [
-    "beef"
-  ],
-
-  turkey: [
-    "turkey"
-  ],
-
-  pork: [
-    "pork"
-  ],
-
-  bacon: [
-    "bacon"
-  ],
-
-  shrimp: [
-    "shrimp",
-    "prawns"
-  ],
-
-  egg: [
-    "egg"
-  ],
-
-  yogurt: [
-    "yogurt"
-  ],
-
-  cheese: [
-    "cheese"
-  ],
-
-  avocado: [
-    "avocado"
-  ],
-
-  zucchini: [
-    "zucchini",
-    "courgette"
-  ],
-
-  asparagus: [
-    "asparagus"
-  ],
-
-  cauliflower: [
-    "cauliflower"
-  ],
-
-  beans: [
-    "beans"
-  ],
-
-  chickpeas: [
-    "chickpeas"
-  ],
-
-  lentils: [
-    "lentils"
-  ],
-
-  quinoa: [
-    "quinoa"
-  ],
-
-  pasta: [
-    "pasta"
-  ],
-
-  oats: [
-    "oats"
-  ],
-
-  bread: [
-    "bread"
-  ],
-
   apple: [
-    "apple"
+    "apple",
+    "apples"
   ],
 
   banana: [
-    "banana"
-  ],
-
-  strawberry: [
-    "strawberry",
-    "strawberries"
-  ],
-
-  blueberry: [
-    "blueberry",
-    "blueberries"
-  ],
-
-  mango: [
-    "mango"
-  ],
-
-  pineapple: [
-    "pineapple"
-  ],
-
-  lemon: [
-    "lemon"
-  ],
-
-  lime: [
-    "lime"
-  ],
-
-  garlic: [
-    "garlic"
-  ],
-
-  ginger: [
-    "ginger"
+    "banana",
+    "bananas"
   ]
 
 };
 
 
-/* ========================================================
-   NORMALIZE TEXT
-   ======================================================== */
+/* =========================================================
+   NORMALIZE INGREDIENT
+   ========================================================= */
 
-function normalizeText(value) {
+function normalizeIngredient(value) {
 
-  return String(value || "")
-    .toLowerCase()
-    .replace(/&/g, " and ")
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  let ingredient =
+    String(value || "")
+      .toLowerCase()
+      .trim();
 
-}
-
-
-/* ========================================================
-   GET CANONICAL INGREDIENT
-   ======================================================== */
-
-function getCanonicalIngredient(value) {
-
-  const text =
-    normalizeText(value);
+  ingredient =
+    ingredient
+      .replace(/[(),]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
 
 
-  if (!text) {
+  if (
+    ingredientAliases[ingredient]
+  ) {
 
-    return "";
+    return ingredient;
 
   }
 
 
-  const groups =
-    Object.keys(
-      ingredientGroups
+  const singular =
+    ingredient.endsWith("s") &&
+    !ingredient.endsWith("ss")
+      ? ingredient.slice(0, -1)
+      : ingredient;
+
+
+  if (
+    ingredientAliases[singular]
+  ) {
+
+    return singular;
+
+  }
+
+
+  return ingredient;
+
+}
+
+
+/* =========================================================
+   INGREDIENT VARIATIONS
+   ========================================================= */
+
+function getIngredientVariations(
+  ingredient
+) {
+
+  const normalized =
+    normalizeIngredient(
+      ingredient
     );
 
 
-  for (
-    const group
-    of groups
+  if (
+    ingredientAliases[normalized]
   ) {
 
-    const aliases =
-      ingredientGroups[group];
+    return [
+      ...ingredientAliases[normalized]
+    ];
+
+  }
 
 
-    for (
-      const alias
-      of aliases
-    ) {
+  return [
+    normalized
+  ];
 
-      const normalizedAlias =
-        normalizeText(
-          alias
+}
+
+
+/* =========================================================
+   FETCH JSON
+   ========================================================= */
+
+async function fetchJSON(
+  url
+) {
+
+  const response =
+    await fetch(url);
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      `Online recipe request failed: ${response.status}`
+    );
+
+  }
+
+
+  return response.json();
+
+}
+
+
+/* =========================================================
+   SEARCH ONE INGREDIENT
+   ========================================================= */
+
+async function searchIngredient(
+  ingredient
+) {
+
+  const variations =
+    getIngredientVariations(
+      ingredient
+    );
+
+
+  const allMeals = [];
+
+
+  for (
+    const variation of variations
+  ) {
+
+    try {
+
+      const data =
+        await fetchJSON(
+          `${THE_MEAL_DB_BASE}/filter.php?i=${encodeURIComponent(
+            variation
+          )}`
         );
 
 
       if (
-        text === normalizedAlias ||
-        text.includes(normalizedAlias)
+        data &&
+        Array.isArray(data.meals)
       ) {
 
-        return group;
+        data.meals.forEach(
+          function(meal) {
+
+            if (
+              !allMeals.some(
+                function(existing) {
+
+                  return (
+                    existing.idMeal ===
+                    meal.idMeal
+                  );
+
+                }
+              )
+            ) {
+
+              allMeals.push(
+                meal
+              );
+
+            }
+
+          }
+        );
 
       }
 
     }
+    catch (error) {
 
-  }
-
-
-  return text
-    .replace(/ies$/, "y")
-    .replace(/s$/, "");
-
-}
-
-
-/* ========================================================
-   SEARCH THEMEALDB
-   ======================================================== */
-
-async function searchMealDB(term) {
-
-  const url =
-    `${THE_MEAL_DB_BASE}/filter.php?i=${encodeURIComponent(term)}`;
-
-
-  try {
-
-    const response =
-      await fetch(url);
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        `HTTP ${response.status}`
+      console.warn(
+        "Ingredient search failed:",
+        variation,
+        error
       );
 
     }
 
-
-    const data =
-      await response.json();
-
-
-    return data.meals || [];
-
   }
 
-  catch (error) {
 
-    console.error(
-      "TheMealDB search failed:",
-      term,
-      error
-    );
-
-
-    return [];
-
-  }
+  return allMeals;
 
 }
 
 
-/* ========================================================
-   SEARCH ALL TERMS FOR ONE INGREDIENT
-   ======================================================== */
-
-async function searchIngredientGroup(
-  canonical
-) {
-
-  const terms =
-    searchTerms[canonical] || [
-      canonical
-    ];
-
-
-  const results =
-    await Promise.all(
-
-      terms.map(
-        function(term) {
-
-          return searchMealDB(
-            term
-          );
-
-        }
-      )
-
-    );
-
-
-  const meals =
-    [];
-
-
-  const seen =
-    new Set();
-
-
-  results.forEach(
-    function(list) {
-
-      list.forEach(
-        function(meal) {
-
-          if (
-            !seen.has(
-              meal.idMeal
-            )
-          ) {
-
-            seen.add(
-              meal.idMeal
-            );
-
-            meals.push(
-              meal
-            );
-
-          }
-
-        }
-      );
-
-    }
-  );
-
-
-  return meals;
-
-}
-
-
-/* ========================================================
+/* =========================================================
    GET FULL RECIPE DETAILS
-   ======================================================== */
+   ========================================================= */
 
-async function getRecipeDetails(
+async function getDetails(
   mealId
 ) {
 
-  const url =
-    `${THE_MEAL_DB_BASE}/lookup.php?i=${encodeURIComponent(mealId)}`;
-
-
-  try {
-
-    const response =
-      await fetch(url);
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        `HTTP ${response.status}`
-      );
-
-    }
-
-
-    const data =
-      await response.json();
-
-
-    if (
-      !data.meals ||
-      !data.meals.length
-    ) {
-
-      return null;
-
-    }
-
-
-    const meal =
-      data.meals[0];
-
-
-    const ingredients =
-      [];
-
-
-    for (
-      let i = 1;
-      i <= 20;
-      i++
-    ) {
-
-      const ingredient =
-        meal[
-          `strIngredient${i}`
-        ];
-
-
-      const measure =
-        meal[
-          `strMeasure${i}`
-        ];
-
-
-      if (
-        ingredient &&
-        ingredient.trim()
-      ) {
-
-        ingredients.push({
-
-          name:
-            ingredient.trim(),
-
-          amount:
-            measure
-              ? measure.trim()
-              : ""
-
-        });
-
-      }
-
-    }
-
-
-    return {
-
-      id:
-        meal.idMeal,
-
-      name:
-        meal.strMeal || "",
-
-      category:
-        meal.strCategory || "",
-
-      area:
-        meal.strArea || "",
-
-      image:
-        meal.strMealThumb || "",
-
-      source:
-        meal.strSource || "",
-
-      youtube:
-        meal.strYoutube || "",
-
-      tags:
-        meal.strTags || "",
-
-      ingredients:
-        ingredients,
-
-      instructions:
-        meal.strInstructions || ""
-
-    };
-
-  }
-
-  catch (error) {
-
-    console.error(
-      "Recipe detail lookup failed:",
-      mealId,
-      error
+  const data =
+    await fetchJSON(
+      `${THE_MEAL_DB_BASE}/lookup.php?i=${encodeURIComponent(
+        mealId
+      )}`
     );
 
+
+  if (
+    !data ||
+    !Array.isArray(data.meals) ||
+    !data.meals.length
+  ) {
 
     return null;
 
   }
 
+
+  return data.meals[0];
+
 }
 
 
-/* ========================================================
-   CHECK RECIPE FOR INGREDIENT
-   ======================================================== */
+/* =========================================================
+   EXTRACT INGREDIENTS
+   ========================================================= */
 
-function recipeContainsIngredient(
-  recipe,
-  canonical
+function extractIngredients(
+  meal
 ) {
 
-  const aliases =
-    ingredientGroups[canonical] || [
-      canonical
-    ];
-
-
-  const recipeIngredients =
-    recipe.ingredients.map(
-      function(item) {
-
-        return normalizeText(
-          item.name
-        );
-
-      }
-    );
+  const ingredients = [];
 
 
   for (
-    const ingredientName
-    of recipeIngredients
+    let i = 1;
+    i <= 20;
+    i++
   ) {
 
-    for (
-      const alias
-      of aliases
+    const ingredient =
+      meal[`strIngredient${i}`];
+
+
+    const measure =
+      meal[`strMeasure${i}`];
+
+
+    if (
+      ingredient &&
+      ingredient.trim()
     ) {
 
-      const normalizedAlias =
-        normalizeText(
-          alias
+      const cleanIngredient =
+        ingredient.trim();
+
+
+      const cleanMeasure =
+        measure
+          ? measure.trim()
+          : "";
+
+
+      ingredients.push(
+        cleanMeasure
+          ? `${cleanMeasure} ${cleanIngredient}`
+          : cleanIngredient
+      );
+
+    }
+
+  }
+
+
+  return ingredients;
+
+}
+
+
+/* =========================================================
+   EXTRACT INGREDIENT NAMES ONLY
+   ========================================================= */
+
+function extractIngredientNames(
+  meal
+) {
+
+  const ingredients = [];
+
+
+  for (
+    let i = 1;
+    i <= 20;
+    i++
+  ) {
+
+    const ingredient =
+      meal[`strIngredient${i}`];
+
+
+    if (
+      ingredient &&
+      ingredient.trim()
+    ) {
+
+      ingredients.push(
+        ingredient
+          .trim()
+          .toLowerCase()
+      );
+
+    }
+
+  }
+
+
+  return ingredients;
+
+}
+
+
+/* =========================================================
+   CALORIE EXTRACTION
+   =========================================================
+
+   TheMealDB does not consistently provide calories.
+
+   We therefore look for calorie information in any
+   available recipe metadata or text.
+
+   Recipes without a usable calorie number are rejected.
+   ========================================================= */
+
+function extractCalories(
+  meal
+) {
+
+  const possibleFields = [
+
+    meal.calories,
+
+    meal.strCalories,
+
+    meal.Calories,
+
+    meal.strNutrition,
+
+    meal.strNutritionalInformation,
+
+    meal.strNotes
+
+  ];
+
+
+  for (
+    const value of possibleFields
+  ) {
+
+    if (
+      value === null ||
+      value === undefined
+    ) {
+
+      continue;
+
+    }
+
+
+    const text =
+      String(value);
+
+
+    const match =
+      text.match(
+        /(\d+(?:\.\d+)?)\s*(?:kcal|calories|cal)/i
+      );
+
+
+    if (match) {
+
+      const calories =
+        Number(match[1]);
+
+
+      if (
+        Number.isFinite(calories) &&
+        calories > 0
+      ) {
+
+        return Math.round(
+          calories
         );
-
-
-      if (
-        ingredientName ===
-        normalizedAlias
-      ) {
-
-        return true;
-
-      }
-
-
-      if (
-        ingredientName.includes(
-          normalizedAlias
-        )
-      ) {
-
-        return true;
-
-      }
-
-
-      if (
-        normalizedAlias.includes(
-          ingredientName
-        )
-      ) {
-
-        return true;
 
       }
 
@@ -917,36 +617,132 @@ function recipeContainsIngredient(
   }
 
 
-  return false;
+  return null;
 
 }
 
 
-/* ========================================================
-   GET MATCHED INGREDIENTS
-   ======================================================== */
+/* =========================================================
+   CALORIE LOOKUP
+   =========================================================
 
-function getMatchedIngredients(
-  recipe,
-  userIngredients
+   TheMealDB itself does not reliably expose calorie
+   information for every recipe.
+
+   We attempt to find it from the recipe's available
+   nutritional fields. No invented calorie values are used.
+   ========================================================= */
+
+function hasCalories(
+  meal
 ) {
 
-  const matched =
-    [];
+  const calories =
+    extractCalories(
+      meal
+    );
 
 
-  userIngredients.forEach(
-    function(ingredient) {
+  return (
+    calories !== null &&
+    calories > 0
+  );
 
-      if (
-        recipeContainsIngredient(
-          recipe,
-          ingredient
+}
+
+
+/* =========================================================
+   MATCH INGREDIENTS
+   ========================================================= */
+
+function ingredientMatches(
+  fridgeIngredient,
+  recipeIngredient
+) {
+
+  const fridge =
+    normalizeIngredient(
+      fridgeIngredient
+    );
+
+
+  const recipe =
+    normalizeIngredient(
+      recipeIngredient
+    );
+
+
+  const variations =
+    getIngredientVariations(
+      fridge
+    );
+
+
+  return variations.some(
+    function(variation) {
+
+      return (
+
+        recipe === variation
+
+        ||
+
+        recipe.includes(
+          variation
         )
-      ) {
 
-        matched.push(
-          ingredient
+        ||
+
+        variation.includes(
+          recipe
+        )
+
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   CALCULATE MATCHES
+   ========================================================= */
+
+function calculateMatches(
+  meal,
+  fridgeIngredients
+) {
+
+  const recipeIngredients =
+    extractIngredientNames(
+      meal
+    );
+
+
+  const matchedIngredients = [];
+
+
+  fridgeIngredients.forEach(
+    function(fridgeIngredient) {
+
+      const matched =
+        recipeIngredients.some(
+          function(recipeIngredient) {
+
+            return ingredientMatches(
+              fridgeIngredient,
+              recipeIngredient
+            );
+
+          }
+        );
+
+
+      if (matched) {
+
+        matchedIngredients.push(
+          fridgeIngredient
         );
 
       }
@@ -955,298 +751,145 @@ function getMatchedIngredients(
   );
 
 
-  return matched;
+  return matchedIngredients;
 
 }
 
 
-/* ========================================================
-   CALCULATE COMBINATION STRENGTH
-   ======================================================== */
+/* =========================================================
+   CONVERT RECIPE
+   ========================================================= */
 
-function calculateCombinationStrength(
-  matchedCount,
-  totalCount
+function convert(
+  meal
 ) {
 
-  if (
-    totalCount <= 0
-  ) {
+  if (!meal) {
 
-    return 0;
+    return null;
 
   }
 
 
   /*
-   * Strong bonus for combinations.
-   *
-   * 1 ingredient = no combination bonus
-   * 2 ingredients = moderate bonus
-   * 3 ingredients = strong bonus
-   * 4+ ingredients = very strong bonus
+   * IMPORTANT:
+   * Reject recipes without calories.
    */
 
-  if (
-    matchedCount >= totalCount
-  ) {
-
-    return 5000;
-
-  }
-
-
-  if (
-    matchedCount >= 4
-  ) {
-
-    return 3500;
-
-  }
-
-
-  if (
-    matchedCount === 3
-  ) {
-
-    return 2500;
-
-  }
-
-
-  if (
-    matchedCount === 2
-  ) {
-
-    return 1000;
-
-  }
-
-
-  return 0;
-
-}
-
-
-/* ========================================================
-   SCORE RECIPE
-   ======================================================== */
-
-function scoreRecipe(
-  recipe,
-  userIngredients,
-  candidateCounts
-) {
-
-  const matched =
-    getMatchedIngredients(
-      recipe,
-      userIngredients
+  const calories =
+    extractCalories(
+      meal
     );
 
 
-  const missing =
-    userIngredients.filter(
-      function(ingredient) {
+  if (
+    calories === null ||
+    calories <= 0
+  ) {
 
-        return !matched.includes(
-          ingredient
-        );
+    return null;
 
-      }
+  }
+
+
+  const ingredients =
+    extractIngredients(
+      meal
     );
 
 
-  const matchCount =
-    matched.length;
+  const instructions =
+    meal.strInstructions
+      ? meal.strInstructions
+          .split(/\r?\n/)
+          .map(function(step) {
 
+            return step.trim();
 
-  const totalFridgeIngredients =
-    userIngredients.length;
+          })
+          .filter(function(step) {
 
+            return step.length > 0;
 
-  const matchPercentage =
-    totalFridgeIngredients > 0
-
-      ? matchCount /
-        totalFridgeIngredients
-
-      : 0;
-
-
-  const recipeIngredientCount =
-    recipe.ingredients.length;
-
-
-  const ingredientCoverage =
-    recipeIngredientCount > 0
-
-      ? matchCount /
-        recipeIngredientCount
-
-      : 0;
-
-
-  const searchOverlap =
-    candidateCounts[
-      recipe.id
-    ] || 0;
-
-
-  const combinationStrength =
-    calculateCombinationStrength(
-      matchCount,
-      totalFridgeIngredients
-    );
-
-
-  /*
-   * Main score.
-   *
-   * Matching more actual fridge
-   * ingredients is by far the
-   * most important factor.
-   */
-
-  let score = 0;
-
-
-  /*
-   * Base match score.
-   */
-
-  score +=
-    matchCount * 10000;
-
-
-  /*
-   * Percentage of fridge used.
-   */
-
-  score +=
-    matchPercentage * 1500;
-
-
-  /*
-   * Combination bonus.
-   */
-
-  score +=
-    combinationStrength;
-
-
-  /*
-   * If the recipe appeared in
-   * multiple ingredient searches,
-   * give it another bonus.
-   */
-
-  score +=
-    searchOverlap * 150;
-
-
-  /*
-   * Reward recipes where your
-   * ingredients make up a meaningful
-   * portion of the ingredient list.
-   */
-
-  score +=
-    ingredientCoverage * 500;
-
-
-  /*
-   * Extra bonus for recipes that
-   * contain every ingredient.
-   */
-
-  if (
-    matchCount ===
-    totalFridgeIngredients
-  ) {
-
-    score += 5000;
-
-  }
-
-
-  /*
-   * Extra bonus for recipes with
-   * at least two fridge ingredients.
-   */
-
-  if (
-    matchCount >= 2
-  ) {
-
-    score += 500;
-
-  }
-
-
-  /*
-   * Extra bonus for 3+ ingredient
-   * combinations.
-   */
-
-  if (
-    matchCount >= 3
-  ) {
-
-    score += 1000;
-
-  }
+          })
+      : [];
 
 
   return {
 
-    recipe:
-      recipe,
+    id:
+      meal.idMeal,
 
-    matched:
-      matched,
+    name:
+      meal.strMeal || "Online Recipe",
 
-    missing:
-      missing,
+    category:
+      meal.strCategory || "",
+
+    area:
+      meal.strArea || "",
+
+    image:
+      meal.strMealThumb || "",
+
+    source:
+      meal.strSource || "",
+
+    youtube:
+      meal.strYoutube || "",
+
+    ingredients:
+      ingredients,
+
+    instructions:
+      instructions,
+
+    calories:
+      calories,
+
+    /*
+     * We intentionally do not invent protein.
+     */
+
+    protein:
+      null,
+
+    difficulty:
+      "Online",
+
+    tags:
+      [],
 
     matchCount:
-      matchCount,
+      0,
 
-    totalIngredients:
-      totalFridgeIngredients,
+    matchedIngredients:
+      [],
 
-    matchPercentage:
-      matchPercentage,
-
-    ingredientCoverage:
-      ingredientCoverage,
-
-    searchOverlap:
-      searchOverlap,
-
-    combinationStrength:
-      combinationStrength,
-
-    score:
-      score
+    online:
+      true
 
   };
 
 }
 
 
-/* ========================================================
-   MAIN SEARCH
-   ======================================================== */
+/* =========================================================
+   SEARCH RECIPES
+   ========================================================= */
 
-async function searchOnlineRecipes(
-  ingredients,
+async function search(
+  fridgeIngredients,
   options = {}
 ) {
 
+  const maxResults =
+    options.maxResults || 48;
+
+
   if (
-    !ingredients ||
-    !ingredients.length
+    !Array.isArray(fridgeIngredients) ||
+    !fridgeIngredients.length
   ) {
 
     return [];
@@ -1254,118 +897,79 @@ async function searchOnlineRecipes(
   }
 
 
+  const cleanedIngredients =
+    fridgeIngredients
+      .map(function(item) {
+
+        return normalizeIngredient(
+          item
+        );
+
+      })
+      .filter(function(item) {
+
+        return item.length > 0;
+
+      });
+
+
   /*
-   * Convert fridge entries to
-   * canonical ingredient groups.
+   * Remove duplicates.
    */
 
-  const userIngredients =
+  const uniqueIngredients =
     [
       ...new Set(
-
-        ingredients
-
-          .map(
-            function(item) {
-
-              return getCanonicalIngredient(
-                item
-              );
-
-            }
-          )
-
-          .filter(
-            function(item) {
-
-              return item.length > 0;
-
-            }
-          )
-
+        cleanedIngredients
       )
     ];
 
 
-  if (
-    !userIngredients.length
-  ) {
-
-    return [];
-
-  }
-
-
-  console.log(
-    "Fridge ingredients:",
-    userIngredients
-  );
-
-
   /*
-   * Unique candidate recipes.
+   * Search each ingredient.
    */
 
-  const candidateMap =
+  const mealMap =
     new Map();
 
 
-  /*
-   * Number of separate ingredient
-   * searches that returned each recipe.
-   */
-
-  const candidateCounts =
-    {};
-
-
-  /*
-   * Search every ingredient.
-   */
-
   for (
     const ingredient
-    of userIngredients
+    of uniqueIngredients
   ) {
 
     const meals =
-      await searchIngredientGroup(
+      await searchIngredient(
         ingredient
       );
-
-
-    console.log(
-      "Search:",
-      ingredient,
-      "returned",
-      meals.length,
-      "recipes"
-    );
 
 
     meals.forEach(
       function(meal) {
 
-        const id =
-          meal.idMeal;
-
-
         if (
-          !candidateMap.has(id)
+          !mealMap.has(
+            meal.idMeal
+          )
         ) {
 
-          candidateMap.set(
-            id,
-            meal
+          mealMap.set(
+            meal.idMeal,
+            {
+              meal: meal,
+              possibleMatches: []
+            }
           );
 
         }
 
 
-        candidateCounts[id] =
-          (
-            candidateCounts[id] || 0
-          ) + 1;
+        mealMap
+          .get(meal.idMeal)
+          .possibleMatches
+          .push(
+            ingredient
+          );
 
       }
     );
@@ -1373,171 +977,117 @@ async function searchOnlineRecipes(
   }
 
 
-  let candidates =
-    [
-      ...candidateMap.values()
-    ];
-
-
   /*
-   * Put recipes found in multiple
-   * ingredient searches near the front
-   * before fetching their full details.
+   * Get complete recipe details.
    */
 
-  candidates.sort(
-    function(a, b) {
-
-      const countA =
-        candidateCounts[
-          a.idMeal
-        ] || 0;
-
-
-      const countB =
-        candidateCounts[
-          b.idMeal
-        ] || 0;
-
-
-      if (
-        countB !== countA
-      ) {
-
-        return (
-          countB -
-          countA
-        );
-
-      }
-
-
-      return a.strMeal.localeCompare(
-        b.strMeal
-      );
-
-    }
-  );
-
-
-  console.log(
-    "Total unique candidates:",
-    candidates.length
-  );
-
-
-  /*
-   * Inspect a larger pool so we have
-   * enough recipes to rank intelligently.
-   */
-
-  const maxDetails =
-    options.maxDetails || 100;
-
-
-  candidates =
-    candidates.slice(
-      0,
-      maxDetails
-    );
-
-
-  const detailedRecipes =
-    [];
-
-
-  /*
-   * Download recipe details in batches.
-   */
-
-  const batchSize =
-    8;
+  const detailResults = [];
 
 
   for (
-    let i = 0;
-    i < candidates.length;
-    i += batchSize
+    const entry
+    of mealMap.values()
   ) {
 
-    const batch =
-      candidates.slice(
-        i,
-        i + batchSize
-      );
+    try {
+
+      const details =
+        await getDetails(
+          entry.meal.idMeal
+        );
 
 
-    const details =
-      await Promise.all(
+      if (!details) {
 
-        batch.map(
-          function(meal) {
-
-            return getRecipeDetails(
-              meal.idMeal
-            );
-
-          }
-        )
-
-      );
-
-
-    details.forEach(
-      function(recipe) {
-
-        if (recipe) {
-
-          detailedRecipes.push(
-            recipe
-          );
-
-        }
+        continue;
 
       }
-    );
+
+
+      /*
+       * IMPORTANT:
+       * Only keep recipes with calories.
+       */
+
+      if (
+        !hasCalories(details)
+      ) {
+
+        continue;
+
+      }
+
+
+      const matchedIngredients =
+        calculateMatches(
+          details,
+          uniqueIngredients
+        );
+
+
+      /*
+       * Only keep recipes that actually match
+       * at least one fridge ingredient.
+       */
+
+      if (
+        matchedIngredients.length === 0
+      ) {
+
+        continue;
+
+      }
+
+
+      const converted =
+        convert(
+          details
+        );
+
+
+      if (!converted) {
+
+        continue;
+
+      }
+
+
+      converted.matchCount =
+        matchedIngredients.length;
+
+
+      converted.matchedIngredients =
+        matchedIngredients;
+
+
+      detailResults.push(
+        converted
+      );
+
+    }
+    catch (error) {
+
+      console.warn(
+        "Could not load recipe details:",
+        entry.meal.idMeal,
+        error
+      );
+
+    }
 
   }
 
 
   /*
-   * Score every recipe against
-   * every fridge ingredient.
+   * Sort:
+   *
+   * 1. Most fridge matches
+   * 2. Recipes with more ingredients matching
+   * 3. Alphabetically
    */
 
-  const scored =
-    detailedRecipes.map(
-      function(recipe) {
-
-        return scoreRecipe(
-          recipe,
-          userIngredients,
-          candidateCounts
-        );
-
-      }
-    );
-
-
-  /*
-   * Sort by the complete smart score.
-   */
-
-  scored.sort(
-    function(a, b) {
-
-      if (
-        b.score !==
-        a.score
-      ) {
-
-        return (
-          b.score -
-          a.score
-        );
-
-      }
-
+  detailResults.sort(
+    function(a,b) {
 
       if (
         b.matchCount !==
@@ -1552,250 +1102,72 @@ async function searchOnlineRecipes(
       }
 
 
-      return a.recipe.name.localeCompare(
-        b.recipe.name
+      return a.name.localeCompare(
+        b.name
       );
 
     }
   );
 
 
-  const maxResults =
-    options.maxResults || 48;
-
-
   /*
-   * Return up to 48 recipes.
+   * Remove duplicates by recipe ID.
    */
 
-  return scored
-    .slice(
-      0,
-      maxResults
-    )
-    .map(
-      function(item) {
+  const uniqueResults = [];
 
-        return {
+  const seen = new Set();
 
-          id:
-            item.recipe.id,
 
-          name:
-            item.recipe.name,
+  detailResults.forEach(
+    function(recipe) {
 
-          category:
-            item.recipe.category,
+      if (
+        seen.has(recipe.id)
+      ) {
 
-          area:
-            item.recipe.area,
-
-          image:
-            item.recipe.image,
-
-          source:
-            item.recipe.source,
-
-          youtube:
-            item.recipe.youtube,
-
-          description:
-            item.recipe.tags,
-
-          ingredients:
-            item.recipe.ingredients,
-
-          instructions:
-            item.recipe.instructions,
-
-          matchedIngredients:
-            item.matched,
-
-          missingIngredients:
-            item.missing,
-
-          matchCount:
-            item.matchCount,
-
-          totalIngredients:
-            item.totalIngredients,
-
-          matchPercentage:
-            item.matchPercentage,
-
-          ingredientCoverage:
-            item.ingredientCoverage,
-
-          searchOverlap:
-            item.searchOverlap,
-
-          combinationStrength:
-            item.combinationStrength,
-
-          score:
-            item.score,
-
-          online:
-            true
-
-        };
+        return;
 
       }
-    );
+
+
+      seen.add(
+        recipe.id
+      );
+
+
+      uniqueResults.push(
+        recipe
+      );
+
+    }
+  );
+
+
+  return uniqueResults.slice(
+    0,
+    maxResults
+  );
 
 }
 
 
-/* ========================================================
-   CONVERT ONLINE RECIPE FOR APP
-   ======================================================== */
-
-function convertOnlineRecipeForApp(
-  recipe
-) {
-
-  if (!recipe) {
-
-    return null;
-
-  }
-
-
-  return {
-
-    id:
-      `online-${recipe.id}`,
-
-    name:
-      recipe.name,
-
-    type:
-      recipe.category ||
-      "Online Recipe",
-
-    calories:
-      null,
-
-    protein:
-      null,
-
-    difficulty:
-      "unknown",
-
-    tags: [
-
-      "online",
-
-      recipe.category || ""
-
-    ],
-
-    ingredients:
-      recipe.ingredients.map(
-        function(item) {
-
-          return item.amount
-
-            ? `${item.amount} ${item.name}`
-
-            : item.name;
-
-        }
-      ),
-
-    instructions:
-      recipe.instructions
-        .split(/\r?\n/)
-        .map(
-          function(step) {
-
-            return step.trim();
-
-          }
-        )
-        .filter(
-          function(step) {
-
-            return step.length > 0;
-
-          }
-        ),
-
-    description:
-      recipe.description ||
-      "Recipe found online through TheMealDB.",
-
-    image:
-      recipe.image,
-
-    source:
-      recipe.source,
-
-    youtube:
-      recipe.youtube,
-
-    matchedIngredients:
-      recipe.matchedIngredients || [],
-
-    missingIngredients:
-      recipe.missingIngredients || [],
-
-    matchCount:
-      recipe.matchCount || 0,
-
-    totalIngredients:
-      recipe.totalIngredients || 0,
-
-    matchPercentage:
-      recipe.matchPercentage || 0,
-
-    ingredientCoverage:
-      recipe.ingredientCoverage || 0,
-
-    searchOverlap:
-      recipe.searchOverlap || 0,
-
-    combinationStrength:
-      recipe.combinationStrength || 0,
-
-    score:
-      recipe.score || 0,
-
-    online:
-      true
-
-  };
-
-}
-
-
-/* ========================================================
+/* =========================================================
    PUBLIC API
-   ======================================================== */
+   ========================================================= */
 
 window.onlineRecipeSearch = {
 
   search:
-    searchOnlineRecipes,
+    search,
+
+  getDetails:
+    getDetails,
 
   convert:
-    convertOnlineRecipeForApp,
+    convert,
 
   normalizeIngredient:
-    function(value) {
-
-      return getCanonicalIngredient(
-        value
-      );
-
-    },
-
-  getCanonicalIngredient:
-    getCanonicalIngredient
+    normalizeIngredient
 
 };
-
-
-console.log(
-  "Combination-smart online recipe search loaded."
-);
