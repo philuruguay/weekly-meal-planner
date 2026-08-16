@@ -252,6 +252,17 @@ textarea {
   line-height: 1.5;
 }
 
+.online-match-summary {
+  background: #edf4ee;
+  border: 1px solid #d5e2d7;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 15px;
+  color: #35523d;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .day-card {
   border: 1px solid #e1e6e2;
   border-radius: 16px;
@@ -425,7 +436,9 @@ textarea {
   margin-top: 18px;
 }
 
-/* ONLINE RECIPES */
+/* ========================================================
+   ONLINE RECIPES
+   ======================================================== */
 
 .online-section {
   margin-top: 25px;
@@ -526,8 +539,6 @@ textarea {
   cursor: pointer;
 }
 
-/* SHOW MORE BUTTON */
-
 .show-more-button {
   width: 100%;
   margin-top: 20px;
@@ -618,6 +629,10 @@ Build a healthy week of meals that fits your life.
 
 </header>
 
+
+<!-- ======================================================
+     SETUP
+     ====================================================== -->
 
 <section id="setupScreen">
 
@@ -789,6 +804,10 @@ Built-in recipes + free online recipe search.
 </section>
 
 
+<!-- ======================================================
+     PLAN
+     ====================================================== -->
+
 <section
 id="planScreen"
 class="hidden"
@@ -881,6 +900,10 @@ onclick="showGroceryList()"
 </div>
 
 
+<!-- ======================================================
+     ONLINE RESULTS
+     ====================================================== -->
+
 <div
 id="onlineRecipesSection"
 class="card online-section hidden"
@@ -905,6 +928,12 @@ class="online-status"
 
 
 <div
+id="onlineRecipeMatchSummary"
+class="online-match-summary hidden"
+></div>
+
+
+<div
 id="onlineRecipeResults"
 class="online-recipe-grid"
 ></div>
@@ -918,6 +947,10 @@ id="showMoreContainer"
 
 </section>
 
+
+<!-- ======================================================
+     BUILT-IN RECIPE
+     ====================================================== -->
 
 <section
 id="recipeScreen"
@@ -940,6 +973,10 @@ onclick="showPlan()"
 </section>
 
 
+<!-- ======================================================
+     ONLINE RECIPE DETAIL
+     ====================================================== -->
+
 <section
 id="onlineRecipeScreen"
 class="hidden"
@@ -960,6 +997,10 @@ onclick="showPlan()"
 
 </section>
 
+
+<!-- ======================================================
+     GROCERY LIST
+     ====================================================== -->
 
 <section
 id="groceryScreen"
@@ -1001,9 +1042,17 @@ class="grocery-list"
 <script>
 
 
+/* ========================================================
+   RECIPE LIBRARY
+   ======================================================== */
+
 const recipes =
 window.recipeLibrary || [];
 
+
+/* ========================================================
+   APP STATE
+   ======================================================== */
 
 let currentPlan = [];
 
@@ -1015,21 +1064,12 @@ let currentFridgeIngredients = [];
 
 let currentOnlineRecipes = [];
 
-
-/*
-=========================================================
-ONLINE RECIPE DISPLAY
-=========================================================
-*/
-
 let onlineRecipesShown = 12;
 
 
-/*
-=========================================================
-GOAL SELECTION
-=========================================================
-*/
+/* ========================================================
+   GOAL SELECTION
+   ======================================================== */
 
 document
 .querySelectorAll(".goal-option")
@@ -1059,6 +1099,10 @@ option.classList.add(
 });
 
 
+/* ========================================================
+   GET SELECTED GOAL
+   ======================================================== */
+
 function getSelectedGoal() {
 
 const selected =
@@ -1072,6 +1116,10 @@ return selected
 
 }
 
+
+/* ========================================================
+   PARSE INGREDIENTS
+   ======================================================== */
 
 function parseIngredients(text) {
 
@@ -1092,11 +1140,9 @@ return item.length > 0;
 }
 
 
-/*
-=========================================================
-FRIDGE MATCHING
-=========================================================
-*/
+/* ========================================================
+   BUILT-IN FRIDGE MATCHING
+   ======================================================== */
 
 function getFridgeMatches(recipe) {
 
@@ -1107,6 +1153,7 @@ if (
 return [];
 
 }
+
 
 const recipeText = [
 
@@ -1152,11 +1199,9 @@ readable
 }
 
 
-/*
-=========================================================
-GENERATE PLAN
-=========================================================
-*/
+/* ========================================================
+   GENERATE PLAN
+   ======================================================== */
 
 function generatePlan() {
 
@@ -1167,11 +1212,13 @@ document.getElementById(
 ).value
 );
 
+
 const likes =
 document.getElementById(
 "likes"
 ).value
 .toLowerCase();
+
 
 const dislikes =
 document.getElementById(
@@ -1179,10 +1226,12 @@ document.getElementById(
 ).value
 .toLowerCase();
 
+
 const fridge =
 document.getElementById(
 "fridge"
 ).value;
+
 
 const difficulty =
 document.getElementById(
@@ -1215,6 +1264,7 @@ return;
 currentTargetCalories =
 calories;
 
+
 currentFridgeIngredients =
 parseIngredients(
 fridge
@@ -1236,11 +1286,13 @@ tag
 }
 );
 
+
 if (disliked) {
 
 return false;
 
 }
+
 
 if (
 difficulty === "easy" &&
@@ -1251,6 +1303,7 @@ return false;
 
 }
 
+
 if (
 difficulty === "moderate" &&
 recipe.difficulty === "advanced"
@@ -1259,6 +1312,7 @@ recipe.difficulty === "advanced"
 return false;
 
 }
+
 
 return true;
 
@@ -1283,6 +1337,7 @@ currentPlan = [];
 
 
 const days = [
+
 "Monday",
 "Tuesday",
 "Wednesday",
@@ -1290,6 +1345,7 @@ const days = [
 "Friday",
 "Saturday",
 "Sunday"
+
 ];
 
 
@@ -1305,9 +1361,13 @@ getSelectedGoal(),
 index
 );
 
+
 currentPlan.push({
+
 day: day,
+
 meals: dayMeals
+
 });
 
 }
@@ -1332,12 +1392,15 @@ day.meals.reduce(
 function(dayTotal, meal) {
 
 return (
+
 dayTotal +
+
 (
 Number(
 meal.protein
 ) || 0
 )
+
 );
 
 },
@@ -1375,18 +1438,22 @@ searchOnlineRecipesForCurrentFridge();
 }
 
 
-/*
-=========================================================
-BUILD DAY
-=========================================================
-*/
+/* ========================================================
+   BUILD BEST DAY
+   ======================================================== */
 
 function buildBestDay(
+
 availableRecipes,
+
 targetCalories,
+
 likes,
+
 goal,
+
 dayIndex
+
 ) {
 
 const breakfasts =
@@ -1395,17 +1462,20 @@ recipe =>
 recipe.type === "Breakfast"
 );
 
+
 const lunches =
 availableRecipes.filter(
 recipe =>
 recipe.type === "Lunch"
 );
 
+
 const dinners =
 availableRecipes.filter(
 recipe =>
 recipe.type === "Dinner"
 );
+
 
 const snacks =
 availableRecipes.filter(
@@ -1428,11 +1498,16 @@ availableRecipes
 }
 
 
-let bestCombination = null;
+let bestCombination =
+null;
 
-let bestScore = Infinity;
 
-const attempts = 700;
+let bestScore =
+Infinity;
+
+
+const attempts =
+700;
 
 
 for (
@@ -1443,10 +1518,21 @@ attempt++
 
 const chosenMeals = [
 
-randomItem(breakfasts),
-randomItem(lunches),
-randomItem(dinners),
-randomItem(snacks)
+randomItem(
+breakfasts
+),
+
+randomItem(
+lunches
+),
+
+randomItem(
+dinners
+),
+
+randomItem(
+snacks
+)
 
 ];
 
@@ -1456,8 +1542,15 @@ chosenMeals.reduce(
 function(total, meal) {
 
 return (
+
 total +
-(Number(meal.calories) || 0)
+
+(
+Number(
+meal.calories
+) || 0
+)
+
 );
 
 },
@@ -1470,8 +1563,15 @@ chosenMeals.reduce(
 function(total, meal) {
 
 return (
+
 total +
-(Number(meal.protein) || 0)
+
+(
+Number(
+meal.protein
+) || 0
+)
+
 );
 
 },
@@ -1493,7 +1593,9 @@ meal.tags.forEach(
 function(tag) {
 
 if (
-likes.includes(tag)
+likes.includes(
+tag
+)
 ) {
 
 score -= 12;
@@ -1515,7 +1617,9 @@ chosenMeals.forEach(
 function(meal) {
 
 score -=
-getFridgeMatches(meal).length *
+getFridgeMatches(
+meal
+).length *
 120;
 
 }
@@ -1552,6 +1656,7 @@ const previousDay =
 currentPlan[
 dayIndex - 1
 ];
+
 
 if (previousDay) {
 
@@ -1602,11 +1707,9 @@ return bestCombination;
 }
 
 
-/*
-=========================================================
-FALLBACK
-=========================================================
-*/
+/* ========================================================
+   FALLBACK DAY
+   ======================================================== */
 
 function buildFallbackDay(
 availableRecipes
@@ -1616,66 +1719,78 @@ return [
 
 availableRecipes.find(
 recipe =>
-recipe.type === "Breakfast"
+recipe.type ===
+"Breakfast"
 )
 ||
 recipes.find(
 recipe =>
-recipe.type === "Breakfast"
+recipe.type ===
+"Breakfast"
 ),
 
 availableRecipes.find(
 recipe =>
-recipe.type === "Lunch"
+recipe.type ===
+"Lunch"
 )
 ||
 recipes.find(
 recipe =>
-recipe.type === "Lunch"
+recipe.type ===
+"Lunch"
 ),
 
 availableRecipes.find(
 recipe =>
-recipe.type === "Dinner"
+recipe.type ===
+"Dinner"
 )
 ||
 recipes.find(
 recipe =>
-recipe.type === "Dinner"
+recipe.type ===
+"Dinner"
 ),
 
 availableRecipes.find(
 recipe =>
-recipe.type === "Snack"
+recipe.type ===
+"Snack"
 )
 ||
 recipes.find(
 recipe =>
-recipe.type === "Snack"
+recipe.type ===
+"Snack"
 )
 
 ];
 
 }
 
+
+/* ========================================================
+   RANDOM ITEM
+   ======================================================== */
 
 function randomItem(array) {
 
 return array[
+
 Math.floor(
 Math.random() *
 array.length
 )
+
 ];
 
 }
 
 
-/*
-=========================================================
-FRIDGE SUMMARY
-=========================================================
-*/
+/* ========================================================
+   FRIDGE SUMMARY
+   ======================================================== */
 
 function updateFridgeSummary() {
 
@@ -1683,6 +1798,7 @@ const box =
 document.getElementById(
 "fridgeSummary"
 );
+
 
 if (
 !currentFridgeIngredients.length
@@ -1692,7 +1808,8 @@ box.classList.add(
 "hidden"
 );
 
-box.innerHTML = "";
+box.innerHTML =
+"";
 
 return;
 
@@ -1729,7 +1846,9 @@ match
 
 
 const used =
-[...usedIngredients];
+[
+...usedIngredients
+];
 
 
 const unused =
@@ -1745,6 +1864,7 @@ item
 
 
 let message =
+
 `<strong>🥕 Built-in meals using ingredients you have:</strong> ${used.length}`;
 
 
@@ -1759,6 +1879,7 @@ message +=
 if (unused.length) {
 
 message +=
+
 `<br><br><strong>Not used by the built-in planner:</strong> ${unused.join(", ")}`;
 
 }
@@ -1767,6 +1888,7 @@ message +=
 box.innerHTML =
 message;
 
+
 box.classList.remove(
 "hidden"
 );
@@ -1774,11 +1896,9 @@ box.classList.remove(
 }
 
 
-/*
-=========================================================
-SEARCH ONLINE FROM SETUP
-=========================================================
-*/
+/* ========================================================
+   SEARCH ONLINE FROM SETUP
+   ======================================================== */
 
 async function searchOnlineFromSetup() {
 
@@ -1823,11 +1943,9 @@ await searchOnlineRecipesForCurrentFridge();
 }
 
 
-/*
-=========================================================
-SEARCH ONLINE
-=========================================================
-*/
+/* ========================================================
+   SEARCH ONLINE
+   ======================================================== */
 
 async function searchOnlineRecipesForCurrentFridge() {
 
@@ -1836,14 +1954,28 @@ document.getElementById(
 "onlineRecipesSection"
 );
 
+
 const status =
 document.getElementById(
 "onlineStatus"
 );
 
+
+const summary =
+document.getElementById(
+"onlineRecipeMatchSummary"
+);
+
+
 const results =
 document.getElementById(
 "onlineRecipeResults"
+);
+
+
+const moreContainer =
+document.getElementById(
+"showMoreContainer"
 );
 
 
@@ -1856,19 +1988,27 @@ status.innerHTML =
 "🌐 Searching the free online recipe database...";
 
 
+summary.classList.add(
+"hidden"
+);
+
+summary.innerHTML =
+"";
+
+
 results.innerHTML =
+
 `<div class="online-loading">
 Looking for recipes using your ingredients...
 </div>`;
 
 
-document.getElementById(
-"showMoreContainer"
-).innerHTML =
+moreContainer.innerHTML =
 "";
 
 
-onlineRecipesShown = 12;
+onlineRecipesShown =
+12;
 
 
 try {
@@ -1879,7 +2019,10 @@ await window.onlineRecipeSearch.search(
 currentFridgeIngredients,
 
 {
-maxResults: 48
+
+maxResults:
+48
+
 }
 
 );
@@ -1887,17 +2030,23 @@ maxResults: 48
 
 currentOnlineRecipes =
 onlineResults
-.map(function(recipe) {
+.map(
+function(recipe) {
 
 return window.onlineRecipeSearch
-.convert(recipe);
+.convert(
+recipe
+);
 
-})
-.filter(function(recipe) {
+}
+)
+.filter(
+function(recipe) {
 
 return recipe !== null;
 
-});
+}
+);
 
 
 renderOnlineRecipes();
@@ -1906,26 +2055,41 @@ renderOnlineRecipes();
 
 catch (error) {
 
-console.error(error);
+console.error(
+error
+);
+
 
 status.innerHTML =
+
 `<div class="online-error">
+
 We couldn't reach the online recipe database right now.
+
 Your built-in recipes are still available.
+
 </div>`;
 
-results.innerHTML = "";
+
+results.innerHTML =
+"";
+
+
+summary.classList.add(
+"hidden"
+);
+
+moreContainer.innerHTML =
+"";
 
 }
 
 }
 
 
-/*
-=========================================================
-RENDER ONLINE RECIPES
-=========================================================
-*/
+/* ========================================================
+   RENDER ONLINE RECIPES
+   ======================================================== */
 
 function renderOnlineRecipes() {
 
@@ -1934,10 +2098,18 @@ document.getElementById(
 "onlineStatus"
 );
 
+
+const summary =
+document.getElementById(
+"onlineRecipeMatchSummary"
+);
+
+
 const results =
 document.getElementById(
 "onlineRecipeResults"
 );
+
 
 const moreContainer =
 document.getElementById(
@@ -1950,19 +2122,136 @@ if (
 ) {
 
 status.innerHTML =
+
 `<div class="online-error">
+
 We couldn't find matching recipes for those ingredients.
+
 Try adding another ingredient.
+
 </div>`;
 
-results.innerHTML = "";
 
-moreContainer.innerHTML = "";
+results.innerHTML =
+"";
+
+
+summary.classList.add(
+"hidden"
+);
+
+summary.innerHTML =
+"";
+
+
+moreContainer.innerHTML =
+"";
+
 
 return;
 
 }
 
+
+/*
+=========================================================
+FIND THE BEST MATCH LEVEL
+=========================================================
+*/
+
+const bestMatch =
+currentOnlineRecipes.reduce(
+function(best, recipe) {
+
+const count =
+Number(
+recipe.matchCount
+) || 0;
+
+
+return count > best
+? count
+: best;
+
+},
+0
+);
+
+
+const totalFridge =
+currentFridgeIngredients.length;
+
+
+/*
+=========================================================
+CREATE SMART SUMMARY
+=========================================================
+*/
+
+if (
+bestMatch >= totalFridge &&
+totalFridge > 0
+) {
+
+status.innerHTML =
+`🎉 Found recipes using all ${totalFridge} of your fridge ingredients.`;
+
+
+summary.innerHTML =
+
+`<strong>🥕 Great match!</strong><br>
+The best recipes use all ${totalFridge} ingredients you entered.
+Recipes with the most fridge ingredients are shown first.`;
+
+
+summary.classList.remove(
+"hidden"
+);
+
+}
+
+else if (
+bestMatch > 0
+) {
+
+status.innerHTML =
+
+`🥕 No recipes found using all ${totalFridge} ingredients. Best available matches use ${bestMatch} of ${totalFridge}.`;
+
+
+summary.innerHTML =
+
+`<strong>Best available matches:</strong><br>
+These recipes use ${bestMatch} of your ${totalFridge} fridge ingredients. Recipes using more of what you already have are shown first.`;
+
+
+summary.classList.remove(
+"hidden"
+);
+
+}
+
+else {
+
+status.innerHTML =
+`Found ${currentOnlineRecipes.length} online recipes.`;
+
+
+summary.classList.add(
+"hidden"
+);
+
+summary.innerHTML =
+"";
+
+}
+
+
+/*
+=========================================================
+RENDER ONLY THE CURRENT PAGE
+=========================================================
+*/
 
 const recipesToShow =
 currentOnlineRecipes.slice(
@@ -1971,39 +2260,51 @@ onlineRecipesShown
 );
 
 
-status.innerHTML =
-`Found ${currentOnlineRecipes.length} online recipes. Recipes matching more of your fridge ingredients are shown first.`;
-
-
 results.innerHTML =
+
 recipesToShow
-.map(function(recipe, index) {
+.map(
+function(recipe, index) {
 
 const matchCount =
-recipe.matchCount || 0;
+recipe.matchCount ||
+0;
+
 
 const matches =
-recipe.matchedIngredients || [];
+recipe.matchedIngredients ||
+[];
+
 
 const matchText =
+
 matchCount === 1
+
 ? "1 ingredient match"
+
 : `${matchCount} ingredient matches`;
 
 
 const imageHTML =
+
 recipe.image
 
 ? `
+
 <img
+
 class="online-recipe-image"
+
 src="${escapeHtmlAttribute(
 recipe.image
 )}"
+
 alt="${escapeHtmlAttribute(
 recipe.name
 )}"
+
 >
+
 `
 
 : "";
@@ -2015,7 +2316,9 @@ return `
 
 ${imageHTML}
 
+
 <div class="online-recipe-body">
+
 
 <div class="online-recipe-title">
 
@@ -2025,32 +2328,52 @@ recipe.name
 
 </div>
 
+
 <div class="match-badge">
 
 🥕 ${matchText}
 
 </div>
 
+
 <div class="online-recipe-meta">
 
 ${
 matches.length
+
 ? `Uses: ${matches
-.map(function(item) {
-return escapeHtml(item);
-})
+.map(
+function(item) {
+
+return escapeHtml(
+item
+);
+
+}
+)
 .join(", ")}`
+
 : "Found online"
+
 }
 
 </div>
 
+
 <button
+
 class="online-view-button"
-onclick="showOnlineRecipe(${index})"
+
+onclick="showOnlineRecipe(
+${index}
+)"
+
 >
+
 View Recipe
+
 </button>
+
 
 </div>
 
@@ -2058,13 +2381,16 @@ View Recipe
 
 `;
 
-})
+}
+)
 .join("");
 
 
 /*
- * SHOW MORE BUTTON
- */
+=========================================================
+SHOW MORE
+=========================================================
+*/
 
 if (
 onlineRecipesShown <
@@ -2075,17 +2401,27 @@ const remaining =
 currentOnlineRecipes.length -
 onlineRecipesShown;
 
+
 moreContainer.innerHTML = `
 
 <button
+
 class="show-more-button"
+
 onclick="showMoreOnlineRecipes()"
+
 >
+
 Show More Recipes
+
 <br>
+
 <small>
+
 ${remaining} more available
+
 </small>
+
 </button>
 
 `;
@@ -2094,22 +2430,23 @@ ${remaining} more available
 
 else {
 
-moreContainer.innerHTML = "";
+moreContainer.innerHTML =
+"";
 
 }
 
 }
 
 
-/*
-=========================================================
-SHOW MORE ONLINE RECIPES
-=========================================================
-*/
+/* ========================================================
+   SHOW MORE ONLINE RECIPES
+   ======================================================== */
 
 function showMoreOnlineRecipes() {
 
-onlineRecipesShown += 12;
+onlineRecipesShown +=
+12;
+
 
 if (
 onlineRecipesShown >
@@ -2121,23 +2458,25 @@ currentOnlineRecipes.length;
 
 }
 
+
 renderOnlineRecipes();
 
 }
 
 
-/*
-=========================================================
-SHOW ONLINE RECIPE
-=========================================================
-*/
+/* ========================================================
+   SHOW ONLINE RECIPE
+   ======================================================== */
 
-function showOnlineRecipe(index) {
+function showOnlineRecipe(
+index
+) {
 
 const recipe =
 currentOnlineRecipes[
 index
 ];
+
 
 if (!recipe) {
 
@@ -2148,21 +2487,45 @@ return;
 
 const ingredientsHTML =
 recipe.ingredients
-.map(function(item) {
+.map(
+function(item) {
 
-return `<li>${escapeHtml(item)}</li>`;
+return `
 
-})
+<li>
+
+${escapeHtml(
+item
+)}
+
+</li>
+
+`;
+
+}
+)
 .join("");
 
 
 const instructionsHTML =
 recipe.instructions
-.map(function(step) {
+.map(
+function(step) {
 
-return `<li>${escapeHtml(step)}</li>`;
+return `
 
-})
+<li>
+
+${escapeHtml(
+step
+)}
+
+</li>
+
+`;
+
+}
+)
 .join("");
 
 
@@ -2170,42 +2533,58 @@ const imageHTML =
 recipe.image
 
 ? `
+
 <img
+
 src="${escapeHtmlAttribute(
 recipe.image
 )}"
+
 alt="${escapeHtmlAttribute(
 recipe.name
 )}"
+
 style="
 width:100%;
 border-radius:16px;
 margin:15px 0 20px;
 "
+
 >
+
 `
 
 : "";
 
 
 const matches =
-recipe.matchedIngredients || [];
+recipe.matchedIngredients ||
+[];
 
 
 const sourceHTML =
 recipe.source
 
 ? `
+
 <a
+
 class="online-source"
+
 href="${escapeHtmlAttribute(
 recipe.source
 )}"
+
 target="_blank"
+
 rel="noopener noreferrer"
+
 >
+
 View Original Recipe
+
 </a>
+
 `
 
 : "";
@@ -2215,17 +2594,27 @@ const youtubeHTML =
 recipe.youtube
 
 ? `
+
 <a
+
 class="online-source"
+
 href="${escapeHtmlAttribute(
 recipe.youtube
 )}"
+
 target="_blank"
+
 rel="noopener noreferrer"
+
 style="margin-left:15px;"
+
 >
+
 Watch Recipe Video
+
 </a>
+
 `
 
 : "";
@@ -2235,6 +2624,7 @@ document.getElementById(
 "onlineRecipeContent"
 ).innerHTML = `
 
+
 <h1 class="recipe-title">
 
 ${escapeHtml(
@@ -2243,80 +2633,145 @@ recipe.name
 
 </h1>
 
+
 ${imageHTML}
+
 
 <div class="nutrition">
 
+
 <span>
+
 🌐 Online Recipe
+
 </span>
+
 
 <span>
-🥕 ${matches.length} fridge matches
+
+🥕 ${matches.length}
+fridge matches
+
 </span>
 
+
 ${
 recipe.category
-? `<span>${escapeHtml(
+
+? `
+
+<span>
+
+${escapeHtml(
 recipe.category
-)}</span>`
+)}
+
+</span>
+
+`
+
 : ""
+
 }
+
 
 ${
 recipe.area
-? `<span>${escapeHtml(
+
+? `
+
+<span>
+
+${escapeHtml(
 recipe.area
-)}</span>`
+)}
+
+</span>
+
+`
+
 : ""
+
 }
+
 
 </div>
 
 
 ${
 matches.length
+
 ? `
+
 <div class="fridge-summary">
 
 <strong>
+
 🥕 Uses ingredients you have:
+
 </strong>
 
+
 ${matches
-.map(function(item) {
-return escapeHtml(item);
-})
+
+.map(
+function(item) {
+
+return escapeHtml(
+item
+);
+
+}
+)
+
 .join(", ")}
 
+
 </div>
+
 `
+
 : ""
+
 }
 
 
 <div class="recipe-section">
 
+
 <h3>
+
 Ingredients
+
 </h3>
 
+
 <ul>
+
 ${ingredientsHTML}
+
 </ul>
+
 
 </div>
 
 
 <div class="recipe-section">
 
+
 <h3>
+
 Directions
+
 </h3>
 
+
 <ol>
+
 ${instructionsHTML}
+
 </ol>
+
 
 </div>
 
@@ -2350,820 +2805,13 @@ window.scrollTo(
 }
 
 
-/*
-=========================================================
-SHOW BUILT-IN RECIPE
-=========================================================
-*/
+/* ========================================================
+   ESCAPE HTML
+   ======================================================== */
 
-function showRecipe(
-dayIndex,
-mealIndex
+function escapeHtml(
+value
 ) {
-
-currentRecipeIndex = {
-
-dayIndex:
-dayIndex,
-
-mealIndex:
-mealIndex
-
-};
-
-
-const meal =
-currentPlan[
-dayIndex
-].meals[
-mealIndex
-];
-
-
-const fridgeMatches =
-getFridgeMatches(
-meal
-);
-
-
-const fridgeMessage =
-fridgeMatches.length
-
-? `
-<div class="fridge-summary">
-🥕 Uses ingredients you already have:
-${fridgeMatches.join(", ")}
-</div>
-`
-
-: "";
-
-
-const ingredientsHTML =
-meal.ingredients
-.map(function(item) {
-
-return `<li>${escapeHtml(item)}</li>`;
-
-})
-.join("");
-
-
-const instructionsHTML =
-meal.instructions
-.map(function(item) {
-
-return `<li>${escapeHtml(item)}</li>`;
-
-})
-.join("");
-
-
-document.getElementById(
-"recipeContent"
-).innerHTML = `
-
-<h1 class="recipe-title">
-
-${escapeHtml(
-meal.name
-)}
-
-</h1>
-
-<p class="recipe-description">
-
-${escapeHtml(
-meal.description
-)}
-
-</p>
-
-${fridgeMessage}
-
-<div class="nutrition">
-
-<span>
-🔥 ${meal.calories} calories
-</span>
-
-<span>
-💪 ${meal.protein}g protein
-</span>
-
-<span>
-🍳 ${escapeHtml(
-meal.difficulty
-)}
-</span>
-
-</div>
-
-<div class="recipe-section">
-
-<h3>
-Ingredients
-</h3>
-
-<ul>
-${ingredientsHTML}
-</ul>
-
-</div>
-
-<div class="recipe-section">
-
-<h3>
-Directions
-</h3>
-
-<ol>
-${instructionsHTML}
-</ol>
-
-</div>
-
-<button
-class="replace-button"
-onclick="replaceCurrentMeal()"
->
-🔄 Replace This Meal
-</button>
-
-`;
-
-
-showRecipeScreen();
-
-}
-
-
-/*
-=========================================================
-REPLACE MEAL
-=========================================================
-*/
-
-function replaceCurrentMeal() {
-
-if (!currentRecipeIndex) {
-
-return;
-
-}
-
-
-const dayIndex =
-currentRecipeIndex.dayIndex;
-
-const mealIndex =
-currentRecipeIndex.mealIndex;
-
-const currentMeal =
-currentPlan[
-dayIndex
-].meals[
-mealIndex
-];
-
-
-const dislikes =
-document.getElementById(
-"dislikes"
-).value
-.toLowerCase();
-
-
-let replacements =
-recipes.filter(
-function(recipe) {
-
-if (
-recipe.id ===
-currentMeal.id
-) {
-
-return false;
-
-}
-
-if (
-recipe.type !==
-currentMeal.type
-) {
-
-return false;
-
-}
-
-const disliked =
-recipe.tags.some(
-function(tag) {
-
-return dislikes.includes(
-tag
-);
-
-}
-);
-
-return !disliked;
-
-}
-);
-
-
-if (
-currentFridgeIngredients.length
-) {
-
-const fridgeReplacements =
-replacements.filter(
-function(recipe) {
-
-return (
-getFridgeMatches(
-recipe
-).length > 0
-);
-
-}
-);
-
-if (
-fridgeReplacements.length
-) {
-
-replacements =
-fridgeReplacements;
-
-}
-
-}
-
-
-if (
-!replacements.length
-) {
-
-replacements =
-recipes.filter(
-function(recipe) {
-
-return (
-recipe.type ===
-currentMeal.type
-&&
-recipe.id !==
-currentMeal.id
-);
-
-}
-);
-
-}
-
-
-const replacement =
-randomItem(
-replacements
-);
-
-
-currentPlan[
-dayIndex
-].meals[
-mealIndex
-] =
-replacement;
-
-
-renderPlan();
-
-updateFridgeSummary();
-
-showRecipe(
-dayIndex,
-mealIndex
-);
-
-}
-
-
-/*
-=========================================================
-RENDER PLAN
-=========================================================
-*/
-
-function renderPlan() {
-
-const container =
-document.getElementById(
-"mealPlan"
-);
-
-container.innerHTML = "";
-
-
-currentPlan.forEach(
-function(day, dayIndex) {
-
-const totalCalories =
-day.meals.reduce(
-function(total, meal) {
-
-return (
-total +
-(Number(meal.calories) || 0)
-);
-
-},
-0
-);
-
-
-const totalProtein =
-day.meals.reduce(
-function(total, meal) {
-
-return (
-total +
-(Number(meal.protein) || 0)
-);
-
-},
-0
-);
-
-
-const difference =
-totalCalories -
-currentTargetCalories;
-
-
-let differenceText;
-
-
-if (
-Math.abs(difference) <= 25
-) {
-
-differenceText =
-"✓ On target";
-
-}
-else if (
-difference > 0
-) {
-
-differenceText =
-`+${difference} calories`;
-
-}
-else {
-
-differenceText =
-`${difference} calories`;
-
-}
-
-
-let mealsHTML = "";
-
-
-day.meals.forEach(
-function(meal, mealIndex) {
-
-const fridgeMatches =
-getFridgeMatches(
-meal
-);
-
-const fridgeBadge =
-fridgeMatches.length
-? " 🥕"
-: "";
-
-
-mealsHTML += `
-
-<div class="meal-row">
-
-<div>
-
-<div class="meal-type">
-
-${escapeHtml(
-meal.type
-)}
-
-</div>
-
-<div class="meal-name">
-
-${escapeHtml(
-meal.name
-)}
-
-${fridgeBadge}
-
-</div>
-
-<div class="meal-info">
-
-${meal.calories} calories
-•
-${meal.protein}g protein
-
-</div>
-
-</div>
-
-<button
-class="meal-button"
-onclick="showRecipe(
-${dayIndex},
-${mealIndex}
-)"
->
-View
-</button>
-
-</div>
-
-`;
-
-}
-);
-
-
-const dayCard =
-document.createElement(
-"div"
-);
-
-dayCard.className =
-"day-card";
-
-
-dayCard.innerHTML = `
-
-<div class="day-header">
-
-<div>
-
-<div class="day-name">
-${day.day}
-</div>
-
-<div class="day-calories">
-
-${totalCalories}
-calories •
-
-${totalProtein}g
-protein
-
-</div>
-
-</div>
-
-<div class="day-calories">
-
-${differenceText}
-
-</div>
-
-</div>
-
-<div class="meal-list">
-
-${mealsHTML}
-
-</div>
-
-`;
-
-
-container.appendChild(
-dayCard
-);
-
-}
-);
-
-}
-
-
-/*
-=========================================================
-GROCERY LIST
-=========================================================
-*/
-
-function showGroceryList() {
-
-const categories = {
-
-"Protein": [],
-
-"Produce": [],
-
-"Grains & Carbs": [],
-
-"Pantry & Other": []
-
-};
-
-
-currentPlan.forEach(
-function(day) {
-
-day.meals.forEach(
-function(meal) {
-
-meal.ingredients.forEach(
-function(ingredient) {
-
-const lower =
-ingredient.toLowerCase();
-
-
-if (
-lower.includes("chicken") ||
-lower.includes("turkey") ||
-lower.includes("steak") ||
-lower.includes("beef") ||
-lower.includes("shrimp") ||
-lower.includes("egg") ||
-lower.includes("yogurt") ||
-lower.includes("cottage") ||
-lower.includes("tofu") ||
-lower.includes("protein powder")
-) {
-
-categories["Protein"].push(
-ingredient
-);
-
-}
-
-else if (
-lower.includes("tomato") ||
-lower.includes("cucumber") ||
-lower.includes("broccoli") ||
-lower.includes("lettuce") ||
-lower.includes("spinach") ||
-lower.includes("pepper") ||
-lower.includes("onion") ||
-lower.includes("mushroom") ||
-lower.includes("avocado") ||
-lower.includes("banana") ||
-lower.includes("berries") ||
-lower.includes("lemon") ||
-lower.includes("lime") ||
-lower.includes("apple") ||
-lower.includes("peach") ||
-lower.includes("mango") ||
-lower.includes("carrot")
-) {
-
-categories["Produce"].push(
-ingredient
-);
-
-}
-
-else if (
-lower.includes("rice") ||
-lower.includes("potato") ||
-lower.includes("pasta") ||
-lower.includes("bread") ||
-lower.includes("oat") ||
-lower.includes("tortilla") ||
-lower.includes("granola") ||
-lower.includes("quinoa")
-) {
-
-categories["Grains & Carbs"].push(
-ingredient
-);
-
-}
-
-else {
-
-categories["Pantry & Other"].push(
-ingredient
-);
-
-}
-
-}
-);
-
-}
-);
-
-}
-);
-
-
-let html = "";
-
-
-Object.keys(
-categories
-).forEach(
-function(category) {
-
-const uniqueItems =
-[
-...new Set(
-categories[category]
-)
-];
-
-
-html += `
-
-<div class="grocery-category">
-
-<h3>
-${category}
-</h3>
-
-<ul>
-
-${
-uniqueItems
-.map(function(item) {
-
-return `
-<li>
-${escapeHtml(item)}
-</li>
-`;
-
-})
-.join("")
-}
-
-</ul>
-
-</div>
-
-`;
-
-}
-);
-
-
-document.getElementById(
-"groceryList"
-).innerHTML =
-html;
-
-
-hideAllScreens();
-
-
-document.getElementById(
-"groceryScreen"
-).classList.remove(
-"hidden"
-);
-
-
-window.scrollTo(
-0,
-0
-);
-
-}
-
-
-/*
-=========================================================
-HIDE SCREENS
-=========================================================
-*/
-
-function hideAllScreens() {
-
-document.getElementById(
-"setupScreen"
-).classList.add(
-"hidden"
-);
-
-document.getElementById(
-"planScreen"
-).classList.add(
-"hidden"
-);
-
-document.getElementById(
-"recipeScreen"
-).classList.add(
-"hidden"
-);
-
-document.getElementById(
-"onlineRecipeScreen"
-).classList.add(
-"hidden"
-);
-
-document.getElementById(
-"groceryScreen"
-).classList.add(
-"hidden"
-);
-
-}
-
-
-function showPlan() {
-
-hideAllScreens();
-
-document.getElementById(
-"planScreen"
-).classList.remove(
-"hidden"
-);
-
-window.scrollTo(
-0,
-0
-);
-
-}
-
-
-function showSetup() {
-
-hideAllScreens();
-
-document.getElementById(
-"setupScreen"
-).classList.remove(
-"hidden"
-);
-
-window.scrollTo(
-0,
-0
-);
-
-}
-
-
-function showRecipeScreen() {
-
-hideAllScreens();
-
-document.getElementById(
-"recipeScreen"
-).classList.remove(
-"hidden"
-);
-
-window.scrollTo(
-0,
-0
-);
-
-}
-
-
-function showOnlineRecipeScreen() {
-
-hideAllScreens();
-
-document.getElementById(
-"onlineRecipeScreen"
-).classList.remove(
-"hidden"
-);
-
-window.scrollTo(
-0,
-0
-);
-
-}
-
-
-/*
-=========================================================
-ESCAPE HTML
-=========================================================
-*/
-
-function escapeHtml(value) {
 
 return String(
 value || ""
@@ -3197,11 +2845,1224 @@ value || ""
 }
 
 
-function escapeHtmlAttribute(value) {
+function escapeHtmlAttribute(
+value
+) {
 
-return escapeHtml(value);
+return escapeHtml(
+value
+);
 
 }
+
+
+/* ========================================================
+   SHOW BUILT-IN RECIPE
+   ======================================================== */
+
+function showRecipe(
+dayIndex,
+mealIndex
+) {
+
+currentRecipeIndex = {
+
+dayIndex:
+dayIndex,
+
+mealIndex:
+mealIndex
+
+};
+
+
+const meal =
+currentPlan[
+dayIndex
+].meals[
+mealIndex
+];
+
+
+const fridgeMatches =
+getFridgeMatches(
+meal
+);
+
+
+const fridgeMessage =
+
+fridgeMatches.length
+
+? `
+
+<div class="fridge-summary">
+
+🥕 Uses ingredients you already have:
+
+${fridgeMatches.join(
+", "
+)}
+
+</div>
+
+`
+
+: "";
+
+
+const ingredientsHTML =
+meal.ingredients
+.map(
+function(item) {
+
+return `
+
+<li>
+
+${escapeHtml(
+item
+)}
+
+</li>
+
+`;
+
+}
+)
+.join("");
+
+
+const instructionsHTML =
+meal.instructions
+.map(
+function(item) {
+
+return `
+
+<li>
+
+${escapeHtml(
+item
+)}
+
+</li>
+
+`;
+
+}
+)
+.join("");
+
+
+document.getElementById(
+"recipeContent"
+).innerHTML = `
+
+
+<h1 class="recipe-title">
+
+${escapeHtml(
+meal.name
+)}
+
+</h1>
+
+
+<p class="recipe-description">
+
+${escapeHtml(
+meal.description
+)}
+
+</p>
+
+
+${fridgeMessage}
+
+
+<div class="nutrition">
+
+
+<span>
+
+🔥
+
+${
+meal.calories !== null &&
+meal.calories !== undefined
+
+? `${meal.calories} calories`
+
+: "Calories not provided"
+
+}
+
+</span>
+
+
+<span>
+
+💪
+
+${
+meal.protein !== null &&
+meal.protein !== undefined
+
+? `${meal.protein}g protein`
+
+: "Protein not provided"
+
+}
+
+</span>
+
+
+<span>
+
+🍳
+
+${escapeHtml(
+meal.difficulty
+)}
+
+</span>
+
+
+</div>
+
+
+<div class="recipe-section">
+
+
+<h3>
+
+Ingredients
+
+</h3>
+
+
+<ul>
+
+${ingredientsHTML}
+
+</ul>
+
+
+</div>
+
+
+<div class="recipe-section">
+
+
+<h3>
+
+Directions
+
+</h3>
+
+
+<ol>
+
+${instructionsHTML}
+
+</ol>
+
+
+</div>
+
+
+<button
+
+class="replace-button"
+
+onclick="replaceCurrentMeal()"
+
+>
+
+🔄 Replace This Meal
+
+</button>
+
+
+`;
+
+
+showRecipeScreen();
+
+}
+
+
+/* ========================================================
+   REPLACE BUILT-IN MEAL
+   ======================================================== */
+
+function replaceCurrentMeal() {
+
+if (
+!currentRecipeIndex
+) {
+
+return;
+
+}
+
+
+const dayIndex =
+currentRecipeIndex.dayIndex;
+
+
+const mealIndex =
+currentRecipeIndex.mealIndex;
+
+
+const currentMeal =
+currentPlan[
+dayIndex
+].meals[
+mealIndex
+];
+
+
+const dislikes =
+document.getElementById(
+"dislikes"
+).value
+.toLowerCase();
+
+
+let replacements =
+recipes.filter(
+function(recipe) {
+
+
+if (
+recipe.id ===
+currentMeal.id
+) {
+
+return false;
+
+}
+
+
+if (
+recipe.type !==
+currentMeal.type
+) {
+
+return false;
+
+}
+
+
+const disliked =
+recipe.tags.some(
+function(tag) {
+
+return dislikes.includes(
+tag
+);
+
+}
+);
+
+
+return !disliked;
+
+}
+);
+
+
+if (
+currentFridgeIngredients.length
+) {
+
+const fridgeReplacements =
+replacements.filter(
+function(recipe) {
+
+return (
+
+getFridgeMatches(
+recipe
+).length > 0
+
+);
+
+}
+);
+
+
+if (
+fridgeReplacements.length
+) {
+
+replacements =
+fridgeReplacements;
+
+}
+
+}
+
+
+if (
+!replacements.length
+) {
+
+replacements =
+recipes.filter(
+function(recipe) {
+
+return (
+
+recipe.type ===
+currentMeal.type
+
+&&
+
+recipe.id !==
+currentMeal.id
+
+);
+
+}
+);
+
+}
+
+
+const replacement =
+randomItem(
+replacements
+);
+
+
+currentPlan[
+dayIndex
+].meals[
+mealIndex
+] =
+replacement;
+
+
+renderPlan();
+
+
+updateFridgeSummary();
+
+
+showRecipe(
+dayIndex,
+mealIndex
+);
+
+}
+
+
+/* ========================================================
+   RENDER PLAN
+   ======================================================== */
+
+function renderPlan() {
+
+const container =
+document.getElementById(
+"mealPlan"
+);
+
+
+container.innerHTML =
+"";
+
+
+currentPlan.forEach(
+function(day, dayIndex) {
+
+
+const totalCalories =
+day.meals.reduce(
+function(total, meal) {
+
+return (
+
+total +
+
+(
+Number(
+meal.calories
+) || 0
+)
+
+);
+
+},
+0
+);
+
+
+const totalProtein =
+day.meals.reduce(
+function(total, meal) {
+
+return (
+
+total +
+
+(
+Number(
+meal.protein
+) || 0
+)
+
+);
+
+},
+0
+);
+
+
+const difference =
+totalCalories -
+currentTargetCalories;
+
+
+let differenceText;
+
+
+if (
+Math.abs(
+difference
+) <= 25
+) {
+
+differenceText =
+"✓ On target";
+
+}
+
+else if (
+difference > 0
+) {
+
+differenceText =
+`+${difference} calories`;
+
+}
+
+else {
+
+differenceText =
+`${difference} calories`;
+
+}
+
+
+let mealsHTML =
+"";
+
+
+day.meals.forEach(
+function(meal, mealIndex) {
+
+
+const fridgeMatches =
+getFridgeMatches(
+meal
+);
+
+
+const fridgeBadge =
+fridgeMatches.length
+
+? " 🥕"
+
+: "";
+
+
+mealsHTML += `
+
+
+<div class="meal-row">
+
+
+<div>
+
+
+<div class="meal-type">
+
+${escapeHtml(
+meal.type
+)}
+
+</div>
+
+
+<div class="meal-name">
+
+${escapeHtml(
+meal.name
+)}
+
+${fridgeBadge}
+
+</div>
+
+
+<div class="meal-info">
+
+${
+meal.calories !== null &&
+meal.calories !== undefined
+
+? `${meal.calories} calories`
+
+: "Calories unavailable"
+
+}
+
+•
+
+${
+meal.protein !== null &&
+meal.protein !== undefined
+
+? `${meal.protein}g protein`
+
+: "Protein unavailable"
+
+}
+
+</div>
+
+
+</div>
+
+
+<button
+
+class="meal-button"
+
+onclick="showRecipe(
+${dayIndex},
+${mealIndex}
+)"
+
+>
+
+View
+
+</button>
+
+
+</div>
+
+
+`;
+
+}
+);
+
+
+const dayCard =
+document.createElement(
+"div"
+);
+
+
+dayCard.className =
+"day-card";
+
+
+dayCard.innerHTML = `
+
+
+<div class="day-header">
+
+
+<div>
+
+
+<div class="day-name">
+
+${day.day}
+
+</div>
+
+
+<div class="day-calories">
+
+${totalCalories}
+calories •
+
+${totalProtein}g
+protein
+
+</div>
+
+
+</div>
+
+
+<div class="day-calories">
+
+${differenceText}
+
+</div>
+
+
+</div>
+
+
+<div class="meal-list">
+
+${mealsHTML}
+
+</div>
+
+
+`;
+
+
+container.appendChild(
+dayCard
+);
+
+}
+);
+
+}
+
+
+/* ========================================================
+   GROCERY LIST
+   ======================================================== */
+
+function showGroceryList() {
+
+const categories = {
+
+"Protein": [],
+
+"Produce": [],
+
+"Grains & Carbs": [],
+
+"Pantry & Other": []
+
+};
+
+
+currentPlan.forEach(
+function(day) {
+
+day.meals.forEach(
+function(meal) {
+
+meal.ingredients.forEach(
+function(ingredient) {
+
+
+const lower =
+ingredient.toLowerCase();
+
+
+if (
+
+lower.includes(
+"chicken"
+)
+
+||
+
+lower.includes(
+"turkey"
+)
+
+||
+
+lower.includes(
+"steak"
+)
+
+||
+
+lower.includes(
+"beef"
+)
+
+||
+
+lower.includes(
+"shrimp"
+)
+
+||
+
+lower.includes(
+"egg"
+)
+
+||
+
+lower.includes(
+"yogurt"
+)
+
+||
+
+lower.includes(
+"cottage"
+)
+
+||
+
+lower.includes(
+"tofu"
+)
+
+||
+
+lower.includes(
+"protein powder"
+)
+
+) {
+
+categories[
+"Protein"
+].push(
+ingredient
+);
+
+}
+
+
+else if (
+
+lower.includes(
+"tomato"
+)
+
+||
+
+lower.includes(
+"cucumber"
+)
+
+||
+
+lower.includes(
+"broccoli"
+)
+
+||
+
+lower.includes(
+"lettuce"
+)
+
+||
+
+lower.includes(
+"spinach"
+)
+
+||
+
+lower.includes(
+"pepper"
+)
+
+||
+
+lower.includes(
+"onion"
+)
+
+||
+
+lower.includes(
+"mushroom"
+)
+
+||
+
+lower.includes(
+"avocado"
+)
+
+||
+
+lower.includes(
+"banana"
+)
+
+||
+
+lower.includes(
+"berries"
+)
+
+||
+
+lower.includes(
+"lemon"
+)
+
+||
+
+lower.includes(
+"lime"
+)
+
+||
+
+lower.includes(
+"apple"
+)
+
+||
+
+lower.includes(
+"peach"
+)
+
+||
+
+lower.includes(
+"mango"
+)
+
+||
+
+lower.includes(
+"carrot"
+)
+
+) {
+
+categories[
+"Produce"
+].push(
+ingredient
+);
+
+}
+
+
+else if (
+
+lower.includes(
+"rice"
+)
+
+||
+
+lower.includes(
+"potato"
+)
+
+||
+
+lower.includes(
+"pasta"
+)
+
+||
+
+lower.includes(
+"bread"
+)
+
+||
+
+lower.includes(
+"oat"
+)
+
+||
+
+lower.includes(
+"tortilla"
+)
+
+||
+
+lower.includes(
+"granola"
+)
+
+||
+
+lower.includes(
+"quinoa"
+)
+
+) {
+
+categories[
+"Grains & Carbs"
+].push(
+ingredient
+);
+
+}
+
+
+else {
+
+categories[
+"Pantry & Other"
+].push(
+ingredient
+);
+
+}
+
+}
+);
+
+}
+);
+
+}
+);
+
+
+let html =
+"";
+
+
+Object.keys(
+categories
+).forEach(
+function(category) {
+
+
+const uniqueItems =
+[
+...new Set(
+categories[
+category
+]
+)
+];
+
+
+html += `
+
+
+<div class="grocery-category">
+
+
+<h3>
+
+${category}
+
+</h3>
+
+
+<ul>
+
+
+${
+uniqueItems
+.map(
+function(item) {
+
+return `
+
+<li>
+
+${escapeHtml(
+item
+)}
+
+</li>
+
+`;
+
+}
+)
+.join("")
+}
+
+
+</ul>
+
+
+</div>
+
+
+`;
+
+}
+);
+
+
+document.getElementById(
+"groceryList"
+).innerHTML =
+html;
+
+
+hideAllScreens();
+
+
+document.getElementById(
+"groceryScreen"
+).classList.remove(
+"hidden"
+);
+
+
+window.scrollTo(
+0,
+0
+);
+
+}
+
+
+/* ========================================================
+   HIDE ALL SCREENS
+   ======================================================== */
+
+function hideAllScreens() {
+
+document.getElementById(
+"setupScreen"
+).classList.add(
+"hidden"
+);
+
+
+document.getElementById(
+"planScreen"
+).classList.add(
+"hidden"
+);
+
+
+document.getElementById(
+"recipeScreen"
+).classList.add(
+"hidden"
+);
+
+
+document.getElementById(
+"onlineRecipeScreen"
+).classList.add(
+"hidden"
+);
+
+
+document.getElementById(
+"groceryScreen"
+).classList.add(
+"hidden"
+);
+
+}
+
+
+/* ========================================================
+   SHOW PLAN
+   ======================================================== */
+
+function showPlan() {
+
+hideAllScreens();
+
+
+document.getElementById(
+"planScreen"
+).classList.remove(
+"hidden"
+);
+
+
+window.scrollTo(
+0,
+0
+);
+
+}
+
+
+/* ========================================================
+   SHOW SETUP
+   ======================================================== */
+
+function showSetup() {
+
+hideAllScreens();
+
+
+document.getElementById(
+"setupScreen"
+).classList.remove(
+"hidden"
+);
+
+
+window.scrollTo(
+0,
+0
+);
+
+}
+
+
+/* ========================================================
+   SHOW RECIPE SCREEN
+   ======================================================== */
+
+function showRecipeScreen() {
+
+hideAllScreens();
+
+
+document.getElementById(
+"recipeScreen"
+).classList.remove(
+"hidden"
+);
+
+
+window.scrollTo(
+0,
+0
+);
+
+}
+
+
+/* ========================================================
+   SHOW ONLINE RECIPE SCREEN
+   ======================================================== */
+
+function showOnlineRecipeScreen() {
+
+hideAllScreens();
+
+
+document.getElementById(
+"onlineRecipeScreen"
+).classList.remove(
+"hidden"
+);
+
+
+window.scrollTo(
+0,
+0
+);
+
+}
+
 
 </script>
 
