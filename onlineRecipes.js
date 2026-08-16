@@ -3,9 +3,14 @@
 ONLINE RECIPE SEARCH
 FREE THEMEALDB VERSION
 
-Searches multiple ingredient variations, downloads the
-actual recipe ingredients, and scores recipes based on
-how many ingredients from the user's fridge they contain.
+This version:
+- Searches each fridge ingredient
+- Combines all candidate recipes
+- Prioritizes recipes returned for multiple ingredients
+- Downloads full recipe details
+- Checks the ACTUAL ingredient list
+- Scores recipes by fridge matches
+- Shows the best matches first
 =========================================================
 */
 
@@ -13,11 +18,9 @@ const THE_MEAL_DB_BASE =
   "https://www.themealdb.com/api/json/v1/1";
 
 
-/*
-=========================================================
-INGREDIENT GROUPS
-=========================================================
-*/
+/* ========================================================
+   INGREDIENT ALIASES
+   ======================================================== */
 
 const ingredientGroups = {
 
@@ -84,6 +87,8 @@ const ingredientGroups = {
     "onions",
     "red onion",
     "red onions",
+    "white onion",
+    "yellow onion",
     "spring onion",
     "green onion"
   ],
@@ -101,7 +106,9 @@ const ingredientGroups = {
     "red pepper",
     "red peppers",
     "green pepper",
-    "green peppers"
+    "green peppers",
+    "yellow pepper",
+    "yellow peppers"
   ],
 
   salmon: [
@@ -113,13 +120,15 @@ const ingredientGroups = {
   tuna: [
     "tuna",
     "tuna steak",
+    "tuna steaks",
     "canned tuna"
   ],
 
   beef: [
     "beef",
-    "steak",
     "beef steak",
+    "steak",
+    "steaks",
     "ground beef",
     "beef mince"
   ],
@@ -146,7 +155,8 @@ const ingredientGroups = {
   shrimp: [
     "shrimp",
     "prawn",
-    "prawns"
+    "prawns",
+    "king prawns"
   ],
 
   egg: [
@@ -289,11 +299,102 @@ const ingredientGroups = {
 };
 
 
-/*
-=========================================================
-NORMALIZE TEXT
-=========================================================
-*/
+/* ========================================================
+   SEARCH TERMS
+   ======================================================== */
+
+const searchTerms = {
+
+  chicken: ["chicken"],
+
+  mushroom: ["mushroom", "mushrooms"],
+
+  rice: ["rice"],
+
+  broccoli: ["broccoli"],
+
+  spinach: ["spinach"],
+
+  potato: ["potato", "potatoes"],
+
+  sweet_potato: ["sweet potato"],
+
+  tomato: ["tomato", "tomatoes"],
+
+  onion: ["onion"],
+
+  carrot: ["carrot"],
+
+  pepper: ["pepper"],
+
+  salmon: ["salmon"],
+
+  tuna: ["tuna"],
+
+  beef: ["beef"],
+
+  turkey: ["turkey"],
+
+  pork: ["pork"],
+
+  bacon: ["bacon"],
+
+  shrimp: ["shrimp", "prawns"],
+
+  egg: ["egg"],
+
+  yogurt: ["yogurt"],
+
+  cheese: ["cheese"],
+
+  avocado: ["avocado"],
+
+  zucchini: ["zucchini", "courgette"],
+
+  asparagus: ["asparagus"],
+
+  cauliflower: ["cauliflower"],
+
+  beans: ["beans"],
+
+  chickpeas: ["chickpeas"],
+
+  lentils: ["lentils"],
+
+  quinoa: ["quinoa"],
+
+  pasta: ["pasta"],
+
+  oats: ["oats"],
+
+  bread: ["bread"],
+
+  apple: ["apple"],
+
+  banana: ["banana"],
+
+  strawberry: ["strawberry", "strawberries"],
+
+  blueberry: ["blueberry", "blueberries"],
+
+  mango: ["mango"],
+
+  pineapple: ["pineapple"],
+
+  lemon: ["lemon"],
+
+  lime: ["lime"],
+
+  garlic: ["garlic"],
+
+  ginger: ["ginger"]
+
+};
+
+
+/* ========================================================
+   NORMALIZE TEXT
+   ======================================================== */
 
 function normalizeText(value) {
 
@@ -307,17 +408,9 @@ function normalizeText(value) {
 }
 
 
-/*
-=========================================================
-CANONICAL INGREDIENT
-
-Turns:
-
-mushrooms → mushroom
-chicken breast → chicken
-brown rice → rice
-=========================================================
-*/
+/* ========================================================
+   GET CANONICAL INGREDIENT
+   ======================================================== */
 
 function getCanonicalIngredient(value) {
 
@@ -325,7 +418,9 @@ function getCanonicalIngredient(value) {
     normalizeText(value);
 
   if (!text) {
+
     return "";
+
   }
 
   const groups =
@@ -361,200 +456,9 @@ function getCanonicalIngredient(value) {
 }
 
 
-/*
-=========================================================
-SEARCH TERMS
-
-IMPORTANT:
-For some ingredients we search both singular and plural.
-=========================================================
-*/
-
-const searchTerms = {
-
-  chicken: [
-    "chicken"
-  ],
-
-  mushroom: [
-    "mushroom",
-    "mushrooms"
-  ],
-
-  rice: [
-    "rice"
-  ],
-
-  broccoli: [
-    "broccoli"
-  ],
-
-  spinach: [
-    "spinach"
-  ],
-
-  potato: [
-    "potato",
-    "potatoes"
-  ],
-
-  sweet_potato: [
-    "sweet potato"
-  ],
-
-  tomato: [
-    "tomato",
-    "tomatoes"
-  ],
-
-  onion: [
-    "onion"
-  ],
-
-  carrot: [
-    "carrot"
-  ],
-
-  pepper: [
-    "pepper"
-  ],
-
-  salmon: [
-    "salmon"
-  ],
-
-  tuna: [
-    "tuna"
-  ],
-
-  beef: [
-    "beef"
-  ],
-
-  turkey: [
-    "turkey"
-  ],
-
-  pork: [
-    "pork"
-  ],
-
-  bacon: [
-    "bacon"
-  ],
-
-  shrimp: [
-    "shrimp",
-    "prawns"
-  ],
-
-  egg: [
-    "egg"
-  ],
-
-  yogurt: [
-    "yogurt"
-  ],
-
-  cheese: [
-    "cheese"
-  ],
-
-  avocado: [
-    "avocado"
-  ],
-
-  zucchini: [
-    "zucchini",
-    "courgette"
-  ],
-
-  asparagus: [
-    "asparagus"
-  ],
-
-  cauliflower: [
-    "cauliflower"
-  ],
-
-  beans: [
-    "beans"
-  ],
-
-  chickpeas: [
-    "chickpeas"
-  ],
-
-  lentils: [
-    "lentils"
-  ],
-
-  quinoa: [
-    "quinoa"
-  ],
-
-  pasta: [
-    "pasta"
-  ],
-
-  oats: [
-    "oats"
-  ],
-
-  bread: [
-    "bread"
-  ],
-
-  apple: [
-    "apple"
-  ],
-
-  banana: [
-    "banana"
-  ],
-
-  strawberry: [
-    "strawberry",
-    "strawberries"
-  ],
-
-  blueberry: [
-    "blueberry",
-    "blueberries"
-  ],
-
-  mango: [
-    "mango"
-  ],
-
-  pineapple: [
-    "pineapple"
-  ],
-
-  lemon: [
-    "lemon"
-  ],
-
-  lime: [
-    "lime"
-  ],
-
-  garlic: [
-    "garlic"
-  ],
-
-  ginger: [
-    "ginger"
-  ]
-
-};
-
-
-/*
-=========================================================
-SEARCH THEMEALDB
-=========================================================
-*/
+/* ========================================================
+   SEARCH THEMEALDB
+   ======================================================== */
 
 async function searchMealDB(term) {
 
@@ -596,11 +500,9 @@ async function searchMealDB(term) {
 }
 
 
-/*
-=========================================================
-SEARCH ALL VARIATIONS OF ONE INGREDIENT
-=========================================================
-*/
+/* ========================================================
+   SEARCH ALL TERMS FOR ONE INGREDIENT
+   ======================================================== */
 
 async function searchIngredientGroup(
   canonical
@@ -620,21 +522,21 @@ async function searchIngredientGroup(
       })
     );
 
-  const combined =
+  const meals =
     [];
 
   const seen =
     new Set();
 
-  results.forEach(function(meals) {
+  results.forEach(function(list) {
 
-    meals.forEach(function(meal) {
+    list.forEach(function(meal) {
 
       if (!seen.has(meal.idMeal)) {
 
         seen.add(meal.idMeal);
 
-        combined.push(meal);
+        meals.push(meal);
 
       }
 
@@ -642,16 +544,14 @@ async function searchIngredientGroup(
 
   });
 
-  return combined;
+  return meals;
 
 }
 
 
-/*
-=========================================================
-GET FULL RECIPE
-=========================================================
-*/
+/* ========================================================
+   GET FULL RECIPE DETAILS
+   ======================================================== */
 
 async function getRecipeDetails(
   mealId
@@ -730,7 +630,7 @@ async function getRecipeDetails(
         meal.idMeal,
 
       name:
-        meal.strMeal,
+        meal.strMeal || "",
 
       category:
         meal.strCategory || "",
@@ -763,7 +663,7 @@ async function getRecipeDetails(
   catch (error) {
 
     console.error(
-      "TheMealDB recipe lookup failed:",
+      "Recipe detail lookup failed:",
       mealId,
       error
     );
@@ -775,39 +675,9 @@ async function getRecipeDetails(
 }
 
 
-/*
-=========================================================
-CHECK WHETHER A RECIPE CONTAINS AN INGREDIENT
-
-This is the key part.
-
-Example:
-
-User:
-mushrooms
-
-Recipe:
-Fresh mushrooms
-
-MATCH ✓
-
-User:
-chicken
-
-Recipe:
-Chicken breast
-
-MATCH ✓
-
-User:
-rice
-
-Recipe:
-Brown rice
-
-MATCH ✓
-=========================================================
-*/
+/* ========================================================
+   CHECK RECIPE FOR INGREDIENT
+   ======================================================== */
 
 function recipeContainsIngredient(
   recipe,
@@ -819,7 +689,7 @@ function recipeContainsIngredient(
       canonical
     ];
 
-  const recipeIngredientText =
+  const ingredientNames =
     recipe.ingredients
       .map(function(item) {
 
@@ -827,30 +697,31 @@ function recipeContainsIngredient(
           item.name
         );
 
-      })
-      .join(" ");
-
-  const recipeName =
-    normalizeText(
-      recipe.name
-    );
-
-  const combinedText =
-    `${recipeIngredientText} ${recipeName}`;
+      });
 
 
-  for (const alias of aliases) {
+  /*
+   * IMPORTANT:
+   * Only the actual ingredient list counts.
+   * We do NOT count the recipe title.
+   */
 
-    const normalizedAlias =
-      normalizeText(alias);
+  for (const ingredientName of ingredientNames) {
 
-    if (
-      combinedText.includes(
-        normalizedAlias
-      )
-    ) {
+    for (const alias of aliases) {
 
-      return true;
+      const normalizedAlias =
+        normalizeText(alias);
+
+      if (
+        ingredientName === normalizedAlias ||
+        ingredientName.includes(normalizedAlias) ||
+        normalizedAlias.includes(ingredientName)
+      ) {
+
+        return true;
+
+      }
 
     }
 
@@ -861,31 +732,14 @@ function recipeContainsIngredient(
 }
 
 
-/*
-=========================================================
-SCORE RECIPE
-
-Example:
-
-chicken + mushroom + rice
-
-Recipe contains all 3:
-
-3 / 3 ⭐⭐⭐
-
-Recipe contains chicken + mushroom:
-
-2 / 3 ⭐⭐
-
-Recipe contains chicken:
-
-1 / 3 ⭐
-=========================================================
-*/
+/* ========================================================
+   SCORE RECIPE
+   ======================================================== */
 
 function scoreRecipe(
   recipe,
-  userIngredients
+  userIngredients,
+  candidateCounts
 ) {
 
   const matched =
@@ -894,18 +748,19 @@ function scoreRecipe(
   const missing =
     [];
 
+
   userIngredients.forEach(
-    function(canonical) {
+    function(ingredient) {
 
       if (
         recipeContainsIngredient(
           recipe,
-          canonical
+          ingredient
         )
       ) {
 
         matched.push(
-          canonical
+          ingredient
         );
 
       }
@@ -913,13 +768,28 @@ function scoreRecipe(
       else {
 
         missing.push(
-          canonical
+          ingredient
         );
 
       }
 
     }
   );
+
+
+  /*
+   * candidateCounts tells us how many
+   * separate ingredient searches found
+   * this recipe.
+   *
+   * This gives recipes appearing in
+   * multiple searches priority.
+   */
+
+  const searchOverlap =
+    candidateCounts[
+      recipe.id
+    ] || 0;
 
 
   return {
@@ -939,19 +809,17 @@ function scoreRecipe(
     totalIngredients:
       userIngredients.length,
 
-    score:
-      matched.length
+    searchOverlap:
+      searchOverlap
 
   };
 
 }
 
 
-/*
-=========================================================
-MAIN SEARCH FUNCTION
-=========================================================
-*/
+/* ========================================================
+   MAIN SEARCH
+   ======================================================== */
 
 async function searchOnlineRecipes(
   ingredients,
@@ -969,8 +837,8 @@ async function searchOnlineRecipes(
 
 
   /*
-   * Convert user's input into canonical
-   * ingredients.
+   * Convert fridge ingredients to
+   * canonical groups.
    */
 
   const userIngredients =
@@ -1007,18 +875,43 @@ async function searchOnlineRecipes(
 
 
   console.log(
-    "User fridge ingredients:",
+    "Fridge ingredients:",
     userIngredients
   );
 
 
   /*
-   * Search every ingredient.
+   * candidateMap stores every recipe
+   * returned by any ingredient search.
    */
 
   const candidateMap =
     new Map();
 
+
+  /*
+   * candidateCounts is VERY important.
+   *
+   * If:
+   *
+   * chicken search → Recipe A
+   * mushroom search → Recipe A
+   *
+   * Recipe A gets:
+   *
+   * candidateCounts[A] = 2
+   */
+
+  const candidateCounts =
+    {};
+
+
+  /*
+   * Search ALL ingredients first.
+   *
+   * We do this before downloading ANY
+   * recipe details.
+   */
 
   for (
     const ingredient of userIngredients
@@ -1031,32 +924,49 @@ async function searchOnlineRecipes(
 
 
     console.log(
+      "Search:",
       ingredient,
-      "found",
+      "returned",
       meals.length,
-      "candidate recipes"
+      "recipes"
     );
 
 
     meals.forEach(function(meal) {
 
+      const id =
+        meal.idMeal;
+
+
       if (
-        !candidateMap.has(
-          meal.idMeal
-        )
+        !candidateMap.has(id)
       ) {
 
         candidateMap.set(
-          meal.idMeal,
+          id,
           meal
         );
 
       }
 
+
+      candidateCounts[id] =
+        (
+          candidateCounts[id] || 0
+        ) + 1;
+
     });
 
   }
 
+
+  /*
+   * FIRST sort candidate recipes by
+   * how many different fridge searches
+   * returned them.
+   *
+   * This is the critical improvement.
+   */
 
   let candidates =
     [
@@ -1064,23 +974,52 @@ async function searchOnlineRecipes(
     ];
 
 
+  candidates.sort(
+    function(a, b) {
+
+      const countA =
+        candidateCounts[
+          a.idMeal
+        ] || 0;
+
+      const countB =
+        candidateCounts[
+          b.idMeal
+        ] || 0;
+
+
+      if (
+        countB !== countA
+      ) {
+
+        return (
+          countB -
+          countA
+        );
+
+      }
+
+
+      return a.strMeal.localeCompare(
+        b.strMeal
+      );
+
+    }
+  );
+
+
   console.log(
-    "Total unique candidates:",
+    "Total candidate recipes:",
     candidates.length
   );
 
 
   /*
-   * Download full details.
-   *
-   * We download more candidates than we
-   * eventually display so that a genuine
-   * 3/3 recipe has a chance to rise to
-   * the top.
+   * Download a reasonably large pool.
    */
 
   const maxDetails =
-    options.maxDetails || 60;
+    options.maxDetails || 100;
 
 
   candidates =
@@ -1090,13 +1029,13 @@ async function searchOnlineRecipes(
     );
 
 
+  /*
+   * Download recipe details in
+   * manageable batches.
+   */
+
   const detailedRecipes =
     [];
-
-
-  /*
-   * Download in small batches.
-   */
 
   const batchSize =
     8;
@@ -1145,8 +1084,8 @@ async function searchOnlineRecipes(
 
 
   /*
-   * Score every recipe using the
-   * ACTUAL ingredient list.
+   * Score recipes against the ACTUAL
+   * ingredient list.
    */
 
   const scored =
@@ -1155,7 +1094,8 @@ async function searchOnlineRecipes(
 
         return scoreRecipe(
           recipe,
-          userIngredients
+          userIngredients,
+          candidateCounts
         );
 
       }
@@ -1163,14 +1103,11 @@ async function searchOnlineRecipes(
 
 
   /*
-   * Sort:
+   * Sort by:
    *
-   * 3/3 first
-   * 2/3 second
-   * 1/3 third
-   *
-   * Never put a lower match above
-   * a higher match.
+   * 1. Actual ingredient matches
+   * 2. Number of searches that found it
+   * 3. Recipe name
    */
 
   scored.sort(
@@ -1189,6 +1126,19 @@ async function searchOnlineRecipes(
       }
 
 
+      if (
+        b.searchOverlap !==
+        a.searchOverlap
+      ) {
+
+        return (
+          b.searchOverlap -
+          a.searchOverlap
+        );
+
+      }
+
+
       return a.recipe.name.localeCompare(
         b.recipe.name
       );
@@ -1197,13 +1147,14 @@ async function searchOnlineRecipes(
   );
 
 
-  /*
-   * Return the best results.
-   */
-
   const maxResults =
     options.maxResults || 12;
 
+
+  /*
+   * Convert results into the format
+   * used by the app.
+   */
 
   return scored
     .slice(
@@ -1256,6 +1207,9 @@ async function searchOnlineRecipes(
         totalIngredients:
           item.totalIngredients,
 
+        searchOverlap:
+          item.searchOverlap,
+
         online:
           true
 
@@ -1266,11 +1220,9 @@ async function searchOnlineRecipes(
 }
 
 
-/*
-=========================================================
-CONVERT TO APP FORMAT
-=========================================================
-*/
+/* ========================================================
+   CONVERT ONLINE RECIPE FOR THE APP
+   ======================================================== */
 
 function convertOnlineRecipeForApp(
   recipe
@@ -1305,8 +1257,11 @@ function convertOnlineRecipeForApp(
       "unknown",
 
     tags: [
+
       "online",
+
       recipe.category || ""
+
     ],
 
     ingredients:
@@ -1314,7 +1269,9 @@ function convertOnlineRecipeForApp(
         function(item) {
 
           return item.amount
+
             ? `${item.amount} ${item.name}`
+
             : item.name;
 
         }
@@ -1359,6 +1316,9 @@ function convertOnlineRecipeForApp(
     totalIngredients:
       recipe.totalIngredients || 0,
 
+    searchOverlap:
+      recipe.searchOverlap || 0,
+
     online:
       true
 
@@ -1367,11 +1327,9 @@ function convertOnlineRecipeForApp(
 }
 
 
-/*
-=========================================================
-PUBLIC API
-=========================================================
-*/
+/* ========================================================
+   PUBLIC API
+   ======================================================== */
 
 window.onlineRecipeSearch = {
 
@@ -1397,5 +1355,5 @@ window.onlineRecipeSearch = {
 
 
 console.log(
-  "Online recipe search loaded - multi-match scoring enabled."
+  "Online recipe search loaded."
 );
