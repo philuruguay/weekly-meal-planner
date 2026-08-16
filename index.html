@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weekly Meal Planner</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f7f4;
+      color: #1f2922;
+    }
+
+    .app {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 30px 20px 60px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .logo {
+      font-size: 42px;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 34px;
+      font-weight: 750;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      color: #68736b;
+      font-size: 17px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 21px;
+    }
+
+    .field {
+      margin-bottom: 22px;
+    }
+
+    label {
+      display: block;
+      font-weight: 650;
+      margin-bottom: 9px;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #d8ded9;
+      border-radius: 12px;
+      font-size: 16px;
+      background: white;
+      color: #1f2922;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .goal-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .goal-option {
+      border: 1px solid #d8ded9;
+      border-radius: 12px;
+      padding: 14px;
+      cursor: pointer;
+      text-align: center;
+      transition: 0.2s;
+    }
+
+    .goal-option:hover {
+      border-color: #718a76;
+    }
+
+    .goal-option.selected {
+      border-color: #42634b;
+      background: #edf4ee;
+      font-weight: 650;
+    }
+
+    .generate-button {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 17px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #42634b;
+      color: white;
+      margin-top: 5px;
+    }
+
+    .generate-button:hover {
+      background: #35523d;
+    }
+
+    .preview {
+      text-align: center;
+      padding: 35px 20px;
+    }
+
+    .preview-icon {
+      font-size: 50px;
+      margin-bottom: 10px;
+    }
+
+    .preview h2 {
+      margin-bottom: 8px;
+    }
+
+    .preview p {
+      color: #68736b;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 600px) {
+      .app {
+        padding: 22px 14px 40px;
+      }
+
+      h1 {
+        font-size: 29px;
+      }
+
+      .goal-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app">
+
+    <header class="header">
+      <div class="logo">🥗</div>
+      <h1>Weekly Meal Planner</h1>
+      <div class="subtitle">
+        Build a healthy week of meals that fits your life.
+      </div>
+    </header>
+
+    <div class="card">
+
+      <h2>Tell us about your week</h2>
+
+      <div class="field">
+        <label>Your goal</label>
+
+        <div class="goal-grid">
+
+          <div class="goal-option selected" onclick="selectGoal(this)">
+            Eat Healthier
+          </div>
+
+          <div class="goal-option" onclick="selectGoal(this)">
+            Lose Weight
+          </div>
+
+          <div class="goal-option" onclick="selectGoal(this)">
+            High Protein
+          </div>
+
+          <div class="goal-option" onclick="selectGoal(this)">
+            Maintain Weight
+          </div>
+
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="calories">Daily calorie target</label>
+
+        <input
+          type="number"
+          id="calories"
+          placeholder="Example: 1800"
+          min="1000"
+          max="5000"
+        >
+      </div>
+
+      <div class="field">
+        <label for="likes">Foods you like</label>
+
+        <textarea
+          id="likes"
+          placeholder="Example: chicken, steak, rice, potatoes, Greek yogurt, eggs..."
+        ></textarea>
+      </div>
+
+      <div class="field">
+        <label for="dislikes">Foods you don't like</label>
+
+        <textarea
+          id="dislikes"
+          placeholder="Example: fish, mushrooms, spicy food..."
+        ></textarea>
+      </div>
+
+      <div class="field">
+        <label for="difficulty">Cooking difficulty</label>
+
+        <select id="difficulty">
+          <option value="easy">Easy — quick and simple</option>
+          <option value="moderate">Moderate — I don't mind cooking</option>
+          <option value="advanced">Advanced — I enjoy cooking</option>
+        </select>
+      </div>
+
+      <button class="generate-button" onclick="generatePlan()">
+        Generate My 7-Day Meal Plan
+      </button>
+
+    </div>
+
+    <div class="card preview">
+
+      <div class="preview-icon">🍽️</div>
+
+      <h2>Your personalized week starts here</h2>
+
+      <p>
+        Tell us what you like, what you don't like, and how you want to eat.
+        We'll build your week around it.
+      </p>
+
+    </div>
+
+  </div>
+
+  <script>
+
+    function selectGoal(element) {
+
+      const options = document.querySelectorAll(".goal-option");
+
+      options.forEach(function(option) {
+        option.classList.remove("selected");
+      });
+
+      element.classList.add("selected");
+    }
+
+
+    function generatePlan() {
+
+      const calories = document.getElementById("calories").value;
+
+      if (!calories) {
+        alert("Please enter your daily calorie target.");
+        return;
+      }
+
+      alert(
+        "Awesome! Your meal planner is ready to generate your week. " +
+        "We'll build the meal-generation system next."
+      );
+    }
+
+  </script>
+
+</body>
+</html>
