@@ -104,11 +104,6 @@
       padding: 14px;
       cursor: pointer;
       text-align: center;
-      transition: 0.2s;
-    }
-
-    .goal-option:hover {
-      border-color: #718a76;
     }
 
     .goal-option.selected {
@@ -127,7 +122,6 @@
       cursor: pointer;
       background: #42634b;
       color: white;
-      margin-top: 5px;
     }
 
     .generate-button:hover {
@@ -150,7 +144,8 @@
       margin: 0;
     }
 
-    .new-plan-button {
+    .new-plan-button,
+    .meal-button {
       border: 1px solid #cbd5cd;
       background: white;
       color: #35523d;
@@ -207,8 +202,9 @@
     }
 
     .day-calories {
-      color: #68736b;
+      color: #42634b;
       font-size: 14px;
+      font-weight: 700;
     }
 
     .meal-list {
@@ -246,18 +242,8 @@
 
     .meal-button {
       flex-shrink: 0;
-      border: 1px solid #ccd5ce;
-      background: white;
-      color: #35523d;
-      border-radius: 9px;
       padding: 8px 11px;
-      cursor: pointer;
       font-size: 13px;
-      font-weight: 650;
-    }
-
-    .meal-button:hover {
-      background: #edf4ee;
     }
 
     .recipe-card {
@@ -286,14 +272,13 @@
     .recipe-description {
       color: #68736b;
       line-height: 1.5;
-      margin-bottom: 20px;
     }
 
     .nutrition {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-bottom: 24px;
+      margin: 20px 0;
     }
 
     .nutrition span {
@@ -308,38 +293,32 @@
       margin-top: 22px;
     }
 
-    .recipe-section h3 {
-      margin-bottom: 10px;
-    }
-
     .recipe-section ul,
     .recipe-section ol {
       line-height: 1.7;
       padding-left: 22px;
     }
 
-    .replace-button {
+    .replace-button,
+    .grocery-button {
       width: 100%;
-      border: none;
       border-radius: 12px;
       padding: 14px;
-      background: #42634b;
-      color: white;
       font-weight: 700;
       cursor: pointer;
       margin-top: 20px;
     }
 
+    .replace-button {
+      border: none;
+      background: #42634b;
+      color: white;
+    }
+
     .grocery-button {
-      width: 100%;
       border: 1px solid #42634b;
-      border-radius: 12px;
-      padding: 14px;
       background: white;
       color: #42634b;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 10px;
     }
 
     .grocery-list {
@@ -350,10 +329,6 @@
     .grocery-category {
       break-inside: avoid;
       margin-bottom: 22px;
-    }
-
-    .grocery-category h3 {
-      margin-bottom: 8px;
     }
 
     .grocery-category ul {
@@ -370,10 +345,7 @@
         font-size: 29px;
       }
 
-      .goal-grid {
-        grid-template-columns: 1fr;
-      }
-
+      .goal-grid,
       .summary {
         grid-template-columns: 1fr;
       }
@@ -381,10 +353,6 @@
       .plan-header {
         align-items: flex-start;
         flex-direction: column;
-      }
-
-      .meal-row {
-        align-items: flex-start;
       }
 
       .grocery-list {
@@ -400,16 +368,12 @@
 
   <header class="header">
     <div class="logo">🥗</div>
-
     <h1>Weekly Meal Planner</h1>
-
     <div class="subtitle">
       Build a healthy week of meals that fits your life.
     </div>
   </header>
 
-
-  <!-- SETUP SCREEN -->
 
   <section id="setupScreen">
 
@@ -418,7 +382,6 @@
       <h2>Tell us about your week</h2>
 
       <div class="field">
-
         <label>Your goal</label>
 
         <div class="goal-grid">
@@ -440,15 +403,11 @@
           </div>
 
         </div>
-
       </div>
 
 
       <div class="field">
-
-        <label for="calories">
-          Daily calorie target
-        </label>
+        <label for="calories">Daily calorie target</label>
 
         <input
           type="number"
@@ -457,43 +416,31 @@
           min="1000"
           max="5000"
         >
-
       </div>
 
 
       <div class="field">
-
-        <label for="likes">
-          Foods you like
-        </label>
+        <label for="likes">Foods you like</label>
 
         <textarea
           id="likes"
-          placeholder="Example: chicken, steak, rice, potatoes, Greek yogurt, eggs..."
+          placeholder="Example: chicken, steak, potatoes, rice, Greek yogurt, eggs..."
         ></textarea>
-
       </div>
 
 
       <div class="field">
-
-        <label for="dislikes">
-          Foods you don't like
-        </label>
+        <label for="dislikes">Foods you don't like</label>
 
         <textarea
           id="dislikes"
           placeholder="Example: fish, mushrooms, spicy food..."
         ></textarea>
-
       </div>
 
 
       <div class="field">
-
-        <label for="difficulty">
-          Cooking difficulty
-        </label>
+        <label for="difficulty">Cooking difficulty</label>
 
         <select id="difficulty">
 
@@ -510,7 +457,6 @@
           </option>
 
         </select>
-
       </div>
 
 
@@ -525,8 +471,6 @@
 
   </section>
 
-
-  <!-- PLAN SCREEN -->
 
   <section id="planScreen" class="hidden">
 
@@ -549,50 +493,18 @@
       <div class="summary">
 
         <div class="summary-box">
-
-          <div
-            class="summary-number"
-            id="summaryCalories"
-          >
-            —
-          </div>
-
-          <div class="summary-label">
-            Target Calories
-          </div>
-
+          <div class="summary-number" id="summaryCalories">—</div>
+          <div class="summary-label">Target Calories</div>
         </div>
 
-
         <div class="summary-box">
-
-          <div
-            class="summary-number"
-            id="summaryProtein"
-          >
-            —
-          </div>
-
-          <div class="summary-label">
-            Avg. Protein
-          </div>
-
+          <div class="summary-number" id="summaryProtein">—</div>
+          <div class="summary-label">Avg. Protein</div>
         </div>
 
-
         <div class="summary-box">
-
-          <div
-            class="summary-number"
-            id="summaryMeals"
-          >
-            21
-          </div>
-
-          <div class="summary-label">
-            Meals
-          </div>
-
+          <div class="summary-number">28</div>
+          <div class="summary-label">Meals & Snacks</div>
         </div>
 
       </div>
@@ -613,8 +525,6 @@
   </section>
 
 
-  <!-- RECIPE SCREEN -->
-
   <section id="recipeScreen" class="hidden">
 
     <div class="recipe-card">
@@ -633,8 +543,6 @@
   </section>
 
 
-  <!-- GROCERY SCREEN -->
-
   <section id="groceryScreen" class="hidden">
 
     <div class="recipe-card">
@@ -652,10 +560,7 @@
         Everything you need for your 7-day meal plan.
       </p>
 
-      <div
-        id="groceryList"
-        class="grocery-list"
-      ></div>
+      <div id="groceryList" class="grocery-list"></div>
 
     </div>
 
@@ -671,7 +576,7 @@ const recipes = [
   {
     id: 1,
     name: "Greek Chicken Bowl",
-    type: "Lunch / Dinner",
+    type: "Lunch",
     calories: 590,
     protein: 52,
     difficulty: "easy",
@@ -690,19 +595,19 @@ const recipes = [
     instructions: [
       "Season the chicken with garlic, oregano, lemon juice, salt and pepper.",
       "Cook the chicken in a skillet until fully cooked.",
-      "Prepare the rice according to package directions.",
+      "Prepare the rice.",
       "Chop the cucumber and tomato.",
       "Combine everything in a bowl and top with Greek yogurt."
     ],
     description:
-      "A high-protein Mediterranean-inspired bowl that is filling without being overly heavy."
+      "A high-protein Mediterranean-inspired bowl."
   },
 
 
   {
     id: 2,
     name: "Chicken & Roasted Potato Bowl",
-    type: "Lunch / Dinner",
+    type: "Lunch",
     calories: 610,
     protein: 50,
     difficulty: "easy",
@@ -716,14 +621,14 @@ const recipes = [
       "Paprika"
     ],
     instructions: [
-      "Cut the potatoes into small cubes.",
-      "Season potatoes and chicken with olive oil and spices.",
-      "Roast potatoes until golden and tender.",
-      "Cook the chicken until fully cooked.",
-      "Steam or roast the broccoli and serve everything together."
+      "Cut potatoes into small cubes.",
+      "Season potatoes and chicken.",
+      "Roast potatoes until golden.",
+      "Cook chicken until fully cooked.",
+      "Steam broccoli and serve together."
     ],
     description:
-      "A simple high-protein meal built around chicken, potatoes and vegetables."
+      "A simple high-protein chicken and potato meal."
   },
 
 
@@ -744,14 +649,14 @@ const recipes = [
       "Black pepper"
     ],
     instructions: [
-      "Season the steak with garlic, salt and pepper.",
-      "Roast the potatoes until crispy.",
-      "Cook the steak to your preferred doneness.",
-      "Steam or sauté the green beans.",
+      "Season the steak.",
+      "Roast the potatoes.",
+      "Cook steak to your preferred doneness.",
+      "Steam the green beans.",
       "Serve together."
     ],
     description:
-      "A satisfying steak dinner with crispy potatoes and green vegetables."
+      "A satisfying steak dinner with potatoes and vegetables."
   },
 
 
@@ -772,12 +677,12 @@ const recipes = [
     ],
     instructions: [
       "Add Greek yogurt to a bowl.",
-      "Top with berries and sliced banana.",
+      "Top with berries and banana.",
       "Add granola and chia seeds.",
       "Serve immediately."
     ],
     description:
-      "A quick, filling breakfast with plenty of protein and fruit."
+      "A quick high-protein breakfast with fruit."
   },
 
 
@@ -798,12 +703,12 @@ const recipes = [
     ],
     instructions: [
       "Toast the bread.",
-      "Cook the eggs to your preference.",
-      "Mash the avocado onto the toast.",
-      "Top with eggs and sliced tomato."
+      "Cook the eggs.",
+      "Mash avocado onto the toast.",
+      "Top with eggs and tomato."
     ],
     description:
-      "A balanced breakfast with protein, healthy fats and whole grains."
+      "A balanced breakfast with protein and healthy fats."
   },
 
 
@@ -824,19 +729,19 @@ const recipes = [
     ],
     instructions: [
       "Cook and slice the chicken.",
-      "Spread Caesar dressing over the tortilla.",
+      "Spread dressing over the tortilla.",
       "Add lettuce, chicken and Parmesan.",
       "Roll tightly and serve."
     ],
     description:
-      "A quick high-protein lunch that is easy to prepare."
+      "A quick high-protein lunch."
   },
 
 
   {
     id: 7,
     name: "Turkey Taco Bowl",
-    type: "Lunch / Dinner",
+    type: "Dinner",
     calories: 570,
     protein: 45,
     difficulty: "easy",
@@ -851,14 +756,14 @@ const recipes = [
       "Greek yogurt"
     ],
     instructions: [
-      "Brown the turkey in a skillet.",
+      "Brown the turkey.",
       "Season with taco seasoning.",
-      "Prepare the rice.",
+      "Prepare rice.",
       "Layer rice, turkey, beans and vegetables.",
       "Top with salsa and Greek yogurt."
     ],
     description:
-      "A filling taco-inspired bowl packed with protein and fibre."
+      "A filling protein-packed taco bowl."
   },
 
 
@@ -879,14 +784,14 @@ const recipes = [
       "Garlic"
     ],
     instructions: [
-      "Cut chicken into bite-sized pieces.",
-      "Cook chicken in a hot skillet.",
-      "Add vegetables and cook until tender-crisp.",
+      "Cut chicken into pieces.",
+      "Cook chicken.",
+      "Add vegetables.",
       "Add soy sauce, sesame oil and garlic.",
       "Serve over rice."
     ],
     description:
-      "A quick balanced stir fry loaded with lean protein and vegetables."
+      "A balanced stir fry loaded with protein and vegetables."
   },
 
 
@@ -907,14 +812,14 @@ const recipes = [
       "Parmesan"
     ],
     instructions: [
-      "Cook pasta according to package directions.",
+      "Cook pasta.",
       "Cook chicken and slice.",
-      "Add spinach and tomatoes to the pan.",
+      "Add spinach and tomatoes.",
       "Toss pasta with pesto.",
-      "Combine with chicken and vegetables."
+      "Combine everything."
     ],
     description:
-      "A comforting pasta dish with lean chicken and vegetables."
+      "A comforting pasta dish with lean chicken."
   },
 
 
@@ -937,11 +842,11 @@ const recipes = [
     instructions: [
       "Cook oats with milk.",
       "Mash half the banana into the oats.",
-      "Top with peanut butter and remaining banana.",
+      "Top with peanut butter and banana.",
       "Add Greek yogurt and cinnamon."
     ],
     description:
-      "Warm, filling oatmeal with banana, peanut butter and extra protein."
+      "Warm, filling oatmeal with banana and extra protein."
   },
 
 
@@ -962,20 +867,20 @@ const recipes = [
       "Mustard"
     ],
     instructions: [
-      "Toast the bread if desired.",
-      "Spread avocado over the bread.",
+      "Toast bread if desired.",
+      "Spread avocado over bread.",
       "Add turkey, lettuce and tomato.",
-      "Add mustard and close the sandwich."
+      "Add mustard and serve."
     ],
     description:
-      "A simple high-protein sandwich with healthy fats and vegetables."
+      "A simple high-protein sandwich."
   },
 
 
   {
     id: 12,
     name: "Chicken Fajita Bowl",
-    type: "Lunch / Dinner",
+    type: "Dinner",
     calories: 580,
     protein: 51,
     difficulty: "easy",
@@ -991,13 +896,81 @@ const recipes = [
     ],
     instructions: [
       "Slice chicken, pepper and onion.",
-      "Cook chicken with fajita seasoning.",
+      "Cook chicken with seasoning.",
       "Add peppers and onion.",
       "Serve over rice.",
       "Top with salsa and Greek yogurt."
     ],
     description:
-      "A colourful, high-protein bowl with plenty of vegetables."
+      "A colourful high-protein fajita bowl."
+  },
+
+
+  {
+    id: 13,
+    name: "Apple & Greek Yogurt",
+    type: "Snack",
+    calories: 190,
+    protein: 17,
+    difficulty: "easy",
+    tags: ["apple", "yogurt", "snack", "healthy"],
+    ingredients: [
+      "1 apple",
+      "3/4 cup Greek yogurt",
+      "Cinnamon"
+    ],
+    instructions: [
+      "Slice the apple.",
+      "Serve with Greek yogurt.",
+      "Sprinkle with cinnamon."
+    ],
+    description:
+      "A simple protein-rich snack."
+  },
+
+
+  {
+    id: 14,
+    name: "Banana Peanut Butter Yogurt",
+    type: "Snack",
+    calories: 230,
+    protein: 15,
+    difficulty: "easy",
+    tags: ["banana", "peanut", "yogurt", "snack"],
+    ingredients: [
+      "1 banana",
+      "1/2 cup Greek yogurt",
+      "1 tbsp peanut butter"
+    ],
+    instructions: [
+      "Slice the banana.",
+      "Add Greek yogurt.",
+      "Drizzle peanut butter over the top."
+    ],
+    description:
+      "A filling snack with protein and healthy fats."
+  },
+
+
+  {
+    id: 15,
+    name: "Berries & Greek Yogurt",
+    type: "Snack",
+    calories: 170,
+    protein: 16,
+    difficulty: "easy",
+    tags: ["berries", "yogurt", "snack", "healthy"],
+    ingredients: [
+      "1 cup Greek yogurt",
+      "1/2 cup berries"
+    ],
+    instructions: [
+      "Add yogurt to a bowl.",
+      "Top with berries.",
+      "Serve chilled."
+    ],
+    description:
+      "A light, high-protein snack."
   }
 
 ];
@@ -1005,11 +978,8 @@ const recipes = [
 
 let currentPlan = [];
 let currentRecipeIndex = null;
+let currentTargetCalories = 1800;
 
-
-/*
- * GOAL SELECTION
- */
 
 document.querySelectorAll(".goal-option").forEach(function(option) {
 
@@ -1026,9 +996,15 @@ document.querySelectorAll(".goal-option").forEach(function(option) {
 });
 
 
-/*
- * GENERATE PLAN
- */
+function getSelectedGoal() {
+
+  const selected =
+    document.querySelector(".goal-option.selected");
+
+  return selected ? selected.dataset.goal : "healthy";
+
+}
+
 
 function generatePlan() {
 
@@ -1053,70 +1029,46 @@ function generatePlan() {
   }
 
 
-  let scoredRecipes = recipes
-    .filter(function(recipe) {
+  currentTargetCalories = calories;
 
-      const hasDislikedFood =
+
+  let availableRecipes =
+    recipes.filter(function(recipe) {
+
+      const disliked =
         recipe.tags.some(function(tag) {
           return dislikes.includes(tag);
         });
 
-      return !hasDislikedFood;
-
-    })
-    .filter(function(recipe) {
-
-      if (difficulty === "easy") {
-        return recipe.difficulty === "easy";
+      if (disliked) {
+        return false;
       }
 
-      if (difficulty === "moderate") {
-        return recipe.difficulty !== "advanced";
+      if (
+        difficulty === "easy" &&
+        recipe.difficulty !== "easy"
+      ) {
+        return false;
+      }
+
+      if (
+        difficulty === "moderate" &&
+        recipe.difficulty === "advanced"
+      ) {
+        return false;
       }
 
       return true;
 
-    })
-    .map(function(recipe) {
-
-      let score = Math.random() * 2;
-
-      recipe.tags.forEach(function(tag) {
-
-        if (likes.includes(tag)) {
-          score += 5;
-        }
-
-      });
-
-      return {
-        recipe: recipe,
-        score: score
-      };
-
-    })
-    .sort(function(a, b) {
-      return b.score - a.score;
     });
 
 
-  if (scoredRecipes.length < 6) {
-
-    scoredRecipes = recipes.map(function(recipe) {
-
-      return {
-        recipe: recipe,
-        score: Math.random()
-      };
-
-    });
-
+  if (availableRecipes.length < 8) {
+    availableRecipes = recipes.slice();
   }
 
 
-  scoredRecipes.sort(function() {
-    return Math.random() - 0.5;
-  });
+  currentPlan = [];
 
 
   const days = [
@@ -1130,31 +1082,21 @@ function generatePlan() {
   ];
 
 
-  currentPlan = [];
+  days.forEach(function(day, index) {
 
-
-  days.forEach(function(day, dayIndex) {
-
-    const breakfast =
-      findMeal(scoredRecipes, "Breakfast", dayIndex);
-
-    const lunch =
-      findMeal(scoredRecipes, "Lunch", dayIndex + 3);
-
-    const dinner =
-      findMeal(scoredRecipes, "Dinner", dayIndex + 6);
+    const dayMeals =
+      buildBestDay(
+        availableRecipes,
+        calories,
+        likes,
+        getSelectedGoal(),
+        index
+      );
 
 
     currentPlan.push({
-
       day: day,
-
-      meals: [
-        breakfast,
-        lunch,
-        dinner
-      ]
-
+      meals: dayMeals
     });
 
   });
@@ -1188,33 +1130,179 @@ function generatePlan() {
 }
 
 
-/*
- * FIND MEAL
- */
+function buildBestDay(
+  availableRecipes,
+  targetCalories,
+  likes,
+  goal,
+  dayIndex
+) {
 
-function findMeal(scoredRecipes, mealType, offset) {
-
-  let candidates =
-    scoredRecipes.filter(function(item) {
-
-      return item.recipe.type.includes(mealType);
-
+  const breakfasts =
+    availableRecipes.filter(function(recipe) {
+      return recipe.type === "Breakfast";
     });
 
 
-  if (candidates.length === 0) {
-    candidates = scoredRecipes;
+  const lunches =
+    availableRecipes.filter(function(recipe) {
+      return recipe.type === "Lunch";
+    });
+
+
+  const dinners =
+    availableRecipes.filter(function(recipe) {
+      return recipe.type === "Dinner";
+    });
+
+
+  const snacks =
+    availableRecipes.filter(function(recipe) {
+      return recipe.type === "Snack";
+    });
+
+
+  const breakfastList =
+    breakfasts.length ? breakfasts : recipes.filter(r => r.type === "Breakfast");
+
+  const lunchList =
+    lunches.length ? lunches : recipes.filter(r => r.type === "Lunch");
+
+  const dinnerList =
+    dinners.length ? dinners : recipes.filter(r => r.type === "Dinner");
+
+  const snackList =
+    snacks.length ? snacks : recipes.filter(r => r.type === "Snack");
+
+
+  let bestCombination = null;
+  let bestScore = Infinity;
+
+
+  for (let b = 0; b < breakfastList.length; b++) {
+
+    for (let l = 0; l < lunchList.length; l++) {
+
+      for (let d = 0; d < dinnerList.length; d++) {
+
+        for (let s = 0; s < snackList.length; s++) {
+
+          const breakfast = breakfastList[b];
+          const lunch = lunchList[l];
+          const dinner = dinnerList[d];
+          const snack = snackList[s];
+
+
+          const totalCalories =
+            breakfast.calories +
+            lunch.calories +
+            dinner.calories +
+            snack.calories;
+
+
+          const totalProtein =
+            breakfast.protein +
+            lunch.protein +
+            dinner.protein +
+            snack.protein;
+
+
+          let score =
+            Math.abs(totalCalories - targetCalories);
+
+
+          /*
+           * Reward foods the user said they like.
+           */
+
+          const chosenMeals = [
+            breakfast,
+            lunch,
+            dinner,
+            snack
+          ];
+
+
+          chosenMeals.forEach(function(meal) {
+
+            meal.tags.forEach(function(tag) {
+
+              if (likes.includes(tag)) {
+                score -= 15;
+              }
+
+            });
+
+          });
+
+
+          /*
+           * High-protein goals favor more protein.
+           */
+
+          if (goal === "protein") {
+
+            score -= totalProtein * 2;
+
+          }
+
+
+          /*
+           * Avoid repeating the exact same meal
+           * too aggressively across the week.
+           */
+
+          if (dayIndex > 0) {
+
+            const previousDay =
+              currentPlan[dayIndex - 1];
+
+
+            if (previousDay) {
+
+              previousDay.meals.forEach(function(previousMeal) {
+
+                chosenMeals.forEach(function(meal) {
+
+                  if (meal.id === previousMeal.id) {
+                    score += 25;
+                  }
+
+                });
+
+              });
+
+            }
+
+          }
+
+
+          if (score < bestScore) {
+
+            bestScore = score;
+
+            bestCombination = [
+              breakfast,
+              lunch,
+              dinner,
+              snack
+            ];
+
+          }
+
+        }
+
+      }
+
+    }
+
   }
 
 
-  return candidates[offset % candidates.length].recipe;
+  return bestCombination;
 
 }
 
-
-/*
- * DISPLAY PLAN
- */
 
 function renderPlan() {
 
@@ -1230,6 +1318,24 @@ function renderPlan() {
       day.meals.reduce(function(total, meal) {
         return total + meal.calories;
       }, 0);
+
+
+    const totalProtein =
+      day.meals.reduce(function(total, meal) {
+        return total + meal.protein;
+      }, 0);
+
+
+    const difference =
+      totalCalories - currentTargetCalories;
+
+
+    const differenceText =
+      difference === 0
+        ? "On target"
+        : difference > 0
+          ? `+${difference} calories`
+          : `${difference} calories`;
 
 
     const dayCard =
@@ -1282,12 +1388,21 @@ function renderPlan() {
 
       <div class="day-header">
 
-        <div class="day-name">
-          ${day.day}
+        <div>
+
+          <div class="day-name">
+            ${day.day}
+          </div>
+
+          <div class="day-calories">
+            ${totalCalories} calories •
+            ${totalProtein}g protein
+          </div>
+
         </div>
 
         <div class="day-calories">
-          ${totalCalories} calories
+          ${differenceText}
         </div>
 
       </div>
@@ -1305,10 +1420,6 @@ function renderPlan() {
 
 }
 
-
-/*
- * SHOW RECIPE
- */
 
 function showRecipe(dayIndex, mealIndex) {
 
@@ -1402,10 +1513,6 @@ function showRecipe(dayIndex, mealIndex) {
 }
 
 
-/*
- * REPLACE MEAL
- */
-
 function replaceCurrentMeal() {
 
   if (!currentRecipeIndex) {
@@ -1424,26 +1531,39 @@ function replaceCurrentMeal() {
     currentPlan[dayIndex].meals[mealIndex];
 
 
-  let replacements =
-    recipes.filter(function(recipe) {
-
-      return recipe.id !== currentMeal.id;
-
-    });
+  const mealType =
+    currentMeal.type;
 
 
   const dislikes =
     document.getElementById("dislikes").value.toLowerCase();
 
 
-  replacements =
-    replacements.filter(function(recipe) {
+  let replacements =
+    recipes.filter(function(recipe) {
+
+      if (recipe.id === currentMeal.id) {
+        return false;
+      }
+
+      if (recipe.type !== mealType) {
+        return false;
+      }
 
       return !recipe.tags.some(function(tag) {
         return dislikes.includes(tag);
       });
 
     });
+
+
+  if (!replacements.length) {
+    replacements =
+      recipes.filter(function(recipe) {
+        return recipe.type === mealType &&
+          recipe.id !== currentMeal.id;
+      });
+  }
 
 
   const replacement =
@@ -1463,20 +1583,13 @@ function replaceCurrentMeal() {
 }
 
 
-/*
- * GROCERY LIST
- */
-
 function showGroceryList() {
 
   const categories = {
 
     "Protein": [],
-
     "Produce": [],
-
     "Grains & Carbs": [],
-
     "Pantry & Other": []
 
   };
@@ -1516,7 +1629,8 @@ function showGroceryList() {
           lower.includes("banana") ||
           lower.includes("berries") ||
           lower.includes("lemon") ||
-          lower.includes("green beans")
+          lower.includes("green beans") ||
+          lower.includes("apple")
         ) {
 
           categories["Produce"].push(ingredient);
@@ -1568,9 +1682,7 @@ function showGroceryList() {
         <ul>
 
           ${uniqueItems.map(function(item) {
-
             return `<li>${item}</li>`;
-
           }).join("")}
 
         </ul>
@@ -1590,10 +1702,6 @@ function showGroceryList() {
 
 }
 
-
-/*
- * SCREEN NAVIGATION
- */
 
 function showPlan() {
 
