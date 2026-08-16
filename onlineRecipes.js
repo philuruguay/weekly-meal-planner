@@ -3,15 +3,17 @@
 ONLINE RECIPE SEARCH
 FREE THEMEALDB VERSION
 
-SMART MATCHING VERSION
+COMBINATION MATCHING VERSION
 
-- Searches each fridge ingredient
-- Combines all candidate recipes
-- Checks the actual ingredient list
+This version:
+- Searches every fridge ingredient
+- Combines results from all searches
+- Checks the actual recipe ingredients
+- Supports ingredient aliases
 - Prioritizes recipes using ALL fridge ingredients
-- Then 2/3, 1/3, etc.
-- Gives extra weight to recipes using a larger
-  percentage of the user's fridge ingredients
+- Gives extra weight to combinations of ingredients
+- Rewards recipes using several fridge ingredients together
+- Penalizes recipes that only match one ingredient
 - Returns up to 48 recipes
 =========================================================
 */
@@ -34,7 +36,8 @@ const ingredientGroups = {
     "chicken thigh",
     "chicken thighs",
     "chicken fillet",
-    "chicken fillets"
+    "chicken fillets",
+    "roast chicken"
   ],
 
   mushroom: [
@@ -58,7 +61,8 @@ const ingredientGroups = {
   ],
 
   broccoli: [
-    "broccoli"
+    "broccoli",
+    "broccoli florets"
   ],
 
   spinach: [
@@ -82,7 +86,9 @@ const ingredientGroups = {
     "tomato",
     "tomatoes",
     "cherry tomato",
-    "cherry tomatoes"
+    "cherry tomatoes",
+    "plum tomato",
+    "plum tomatoes"
   ],
 
   onion: [
@@ -93,7 +99,9 @@ const ingredientGroups = {
     "white onion",
     "yellow onion",
     "spring onion",
-    "green onion"
+    "green onion",
+    "scallion",
+    "scallions"
   ],
 
   carrot: [
@@ -133,7 +141,8 @@ const ingredientGroups = {
     "steak",
     "steaks",
     "ground beef",
-    "beef mince"
+    "beef mince",
+    "minced beef"
   ],
 
   turkey: [
@@ -152,7 +161,8 @@ const ingredientGroups = {
   ],
 
   bacon: [
-    "bacon"
+    "bacon",
+    "back bacon"
   ],
 
   shrimp: [
@@ -308,89 +318,180 @@ const ingredientGroups = {
 
 const searchTerms = {
 
-  chicken: ["chicken"],
+  chicken: [
+    "chicken"
+  ],
 
-  mushroom: ["mushroom", "mushrooms"],
+  mushroom: [
+    "mushroom",
+    "mushrooms"
+  ],
 
-  rice: ["rice"],
+  rice: [
+    "rice"
+  ],
 
-  broccoli: ["broccoli"],
+  broccoli: [
+    "broccoli"
+  ],
 
-  spinach: ["spinach"],
+  spinach: [
+    "spinach"
+  ],
 
-  potato: ["potato", "potatoes"],
+  potato: [
+    "potato",
+    "potatoes"
+  ],
 
-  sweet_potato: ["sweet potato"],
+  sweet_potato: [
+    "sweet potato"
+  ],
 
-  tomato: ["tomato", "tomatoes"],
+  tomato: [
+    "tomato",
+    "tomatoes"
+  ],
 
-  onion: ["onion"],
+  onion: [
+    "onion"
+  ],
 
-  carrot: ["carrot"],
+  carrot: [
+    "carrot"
+  ],
 
-  pepper: ["pepper"],
+  pepper: [
+    "pepper"
+  ],
 
-  salmon: ["salmon"],
+  salmon: [
+    "salmon"
+  ],
 
-  tuna: ["tuna"],
+  tuna: [
+    "tuna"
+  ],
 
-  beef: ["beef"],
+  beef: [
+    "beef"
+  ],
 
-  turkey: ["turkey"],
+  turkey: [
+    "turkey"
+  ],
 
-  pork: ["pork"],
+  pork: [
+    "pork"
+  ],
 
-  bacon: ["bacon"],
+  bacon: [
+    "bacon"
+  ],
 
-  shrimp: ["shrimp", "prawns"],
+  shrimp: [
+    "shrimp",
+    "prawns"
+  ],
 
-  egg: ["egg"],
+  egg: [
+    "egg"
+  ],
 
-  yogurt: ["yogurt"],
+  yogurt: [
+    "yogurt"
+  ],
 
-  cheese: ["cheese"],
+  cheese: [
+    "cheese"
+  ],
 
-  avocado: ["avocado"],
+  avocado: [
+    "avocado"
+  ],
 
-  zucchini: ["zucchini", "courgette"],
+  zucchini: [
+    "zucchini",
+    "courgette"
+  ],
 
-  asparagus: ["asparagus"],
+  asparagus: [
+    "asparagus"
+  ],
 
-  cauliflower: ["cauliflower"],
+  cauliflower: [
+    "cauliflower"
+  ],
 
-  beans: ["beans"],
+  beans: [
+    "beans"
+  ],
 
-  chickpeas: ["chickpeas"],
+  chickpeas: [
+    "chickpeas"
+  ],
 
-  lentils: ["lentils"],
+  lentils: [
+    "lentils"
+  ],
 
-  quinoa: ["quinoa"],
+  quinoa: [
+    "quinoa"
+  ],
 
-  pasta: ["pasta"],
+  pasta: [
+    "pasta"
+  ],
 
-  oats: ["oats"],
+  oats: [
+    "oats"
+  ],
 
-  bread: ["bread"],
+  bread: [
+    "bread"
+  ],
 
-  apple: ["apple"],
+  apple: [
+    "apple"
+  ],
 
-  banana: ["banana"],
+  banana: [
+    "banana"
+  ],
 
-  strawberry: ["strawberry", "strawberries"],
+  strawberry: [
+    "strawberry",
+    "strawberries"
+  ],
 
-  blueberry: ["blueberry", "blueberries"],
+  blueberry: [
+    "blueberry",
+    "blueberries"
+  ],
 
-  mango: ["mango"],
+  mango: [
+    "mango"
+  ],
 
-  pineapple: ["pineapple"],
+  pineapple: [
+    "pineapple"
+  ],
 
-  lemon: ["lemon"],
+  lemon: [
+    "lemon"
+  ],
 
-  lime: ["lime"],
+  lime: [
+    "lime"
+  ],
 
-  garlic: ["garlic"],
+  garlic: [
+    "garlic"
+  ],
 
-  ginger: ["ginger"]
+  ginger: [
+    "ginger"
+  ]
 
 };
 
@@ -822,20 +923,15 @@ function recipeContainsIngredient(
 
 
 /* ========================================================
-   SCORE RECIPE
+   GET MATCHED INGREDIENTS
    ======================================================== */
 
-function scoreRecipe(
+function getMatchedIngredients(
   recipe,
-  userIngredients,
-  candidateCounts
+  userIngredients
 ) {
 
   const matched =
-    [];
-
-
-  const missing =
     [];
 
 
@@ -855,16 +951,110 @@ function scoreRecipe(
 
       }
 
-      else {
+    }
+  );
 
-        missing.push(
+
+  return matched;
+
+}
+
+
+/* ========================================================
+   CALCULATE COMBINATION STRENGTH
+   ======================================================== */
+
+function calculateCombinationStrength(
+  matchedCount,
+  totalCount
+) {
+
+  if (
+    totalCount <= 0
+  ) {
+
+    return 0;
+
+  }
+
+
+  /*
+   * Strong bonus for combinations.
+   *
+   * 1 ingredient = no combination bonus
+   * 2 ingredients = moderate bonus
+   * 3 ingredients = strong bonus
+   * 4+ ingredients = very strong bonus
+   */
+
+  if (
+    matchedCount >= totalCount
+  ) {
+
+    return 5000;
+
+  }
+
+
+  if (
+    matchedCount >= 4
+  ) {
+
+    return 3500;
+
+  }
+
+
+  if (
+    matchedCount === 3
+  ) {
+
+    return 2500;
+
+  }
+
+
+  if (
+    matchedCount === 2
+  ) {
+
+    return 1000;
+
+  }
+
+
+  return 0;
+
+}
+
+
+/* ========================================================
+   SCORE RECIPE
+   ======================================================== */
+
+function scoreRecipe(
+  recipe,
+  userIngredients,
+  candidateCounts
+) {
+
+  const matched =
+    getMatchedIngredients(
+      recipe,
+      userIngredients
+    );
+
+
+  const missing =
+    userIngredients.filter(
+      function(ingredient) {
+
+        return !matched.includes(
           ingredient
         );
 
       }
-
-    }
-  );
+    );
 
 
   const matchCount =
@@ -884,27 +1074,9 @@ function scoreRecipe(
       : 0;
 
 
-  const searchOverlap =
-    candidateCounts[
-      recipe.id
-    ] || 0;
-
-
-  /*
-   * Number of ingredients in the
-   * actual recipe.
-   */
-
   const recipeIngredientCount =
     recipe.ingredients.length;
 
-
-  /*
-   * A smaller recipe with the same
-   * number of matches gets a slight
-   * advantage because your fridge
-   * ingredients make up more of it.
-   */
 
   const ingredientCoverage =
     recipeIngredientCount > 0
@@ -915,54 +1087,110 @@ function scoreRecipe(
       : 0;
 
 
+  const searchOverlap =
+    candidateCounts[
+      recipe.id
+    ] || 0;
+
+
+  const combinationStrength =
+    calculateCombinationStrength(
+      matchCount,
+      totalFridgeIngredients
+    );
+
+
   /*
-   * SMART SCORE
+   * Main score.
    *
-   * Match count is overwhelmingly
-   * important.
-   *
-   * Coverage and search overlap
-   * break ties.
+   * Matching more actual fridge
+   * ingredients is by far the
+   * most important factor.
    */
 
   let score = 0;
 
 
+  /*
+   * Base match score.
+   */
+
   score +=
     matchCount * 10000;
 
 
-  score +=
-    matchPercentage * 1000;
-
-
-  score +=
-    ingredientCoverage * 300;
-
+  /*
+   * Percentage of fridge used.
+   */
 
   score +=
-    searchOverlap * 100;
+    matchPercentage * 1500;
 
 
   /*
-   * Small bonus for recipes where
-   * the user's ingredients make up
-   * a meaningful portion of the dish.
+   * Combination bonus.
    */
 
-  if (
-    matchCount >= 2 &&
-    ingredientCoverage >= 0.5
-  ) {
+  score +=
+    combinationStrength;
 
-    score += 150;
 
-  }
+  /*
+   * If the recipe appeared in
+   * multiple ingredient searches,
+   * give it another bonus.
+   */
 
+  score +=
+    searchOverlap * 150;
+
+
+  /*
+   * Reward recipes where your
+   * ingredients make up a meaningful
+   * portion of the ingredient list.
+   */
+
+  score +=
+    ingredientCoverage * 500;
+
+
+  /*
+   * Extra bonus for recipes that
+   * contain every ingredient.
+   */
 
   if (
     matchCount ===
     totalFridgeIngredients
+  ) {
+
+    score += 5000;
+
+  }
+
+
+  /*
+   * Extra bonus for recipes with
+   * at least two fridge ingredients.
+   */
+
+  if (
+    matchCount >= 2
+  ) {
+
+    score += 500;
+
+  }
+
+
+  /*
+   * Extra bonus for 3+ ingredient
+   * combinations.
+   */
+
+  if (
+    matchCount >= 3
   ) {
 
     score += 1000;
@@ -996,6 +1224,9 @@ function scoreRecipe(
     searchOverlap:
       searchOverlap,
 
+    combinationStrength:
+      combinationStrength,
+
     score:
       score
 
@@ -1024,7 +1255,7 @@ async function searchOnlineRecipes(
 
 
   /*
-   * Convert the user's entries into
+   * Convert fridge entries to
    * canonical ingredient groups.
    */
 
@@ -1072,7 +1303,7 @@ async function searchOnlineRecipes(
 
 
   /*
-   * Stores unique candidate recipes.
+   * Unique candidate recipes.
    */
 
   const candidateMap =
@@ -1080,9 +1311,8 @@ async function searchOnlineRecipes(
 
 
   /*
-   * Tracks how many different
-   * ingredient searches returned
-   * each recipe.
+   * Number of separate ingredient
+   * searches that returned each recipe.
    */
 
   const candidateCounts =
@@ -1090,7 +1320,7 @@ async function searchOnlineRecipes(
 
 
   /*
-   * Search every fridge ingredient.
+   * Search every ingredient.
    */
 
   for (
@@ -1150,13 +1380,9 @@ async function searchOnlineRecipes(
 
 
   /*
-   * First put recipes found by
-   * multiple ingredient searches
-   * near the front.
-   *
-   * The actual recipe ingredient
-   * check later determines the final
-   * ranking.
+   * Put recipes found in multiple
+   * ingredient searches near the front
+   * before fetching their full details.
    */
 
   candidates.sort(
@@ -1201,7 +1427,8 @@ async function searchOnlineRecipes(
 
 
   /*
-   * Inspect up to 100 candidates.
+   * Inspect a larger pool so we have
+   * enough recipes to rank intelligently.
    */
 
   const maxDetails =
@@ -1220,9 +1447,7 @@ async function searchOnlineRecipes(
 
 
   /*
-   * Download details in batches
-   * to avoid sending too many
-   * requests simultaneously.
+   * Download recipe details in batches.
    */
 
   const batchSize =
@@ -1276,8 +1501,8 @@ async function searchOnlineRecipes(
 
 
   /*
-   * Score every recipe using the
-   * ACTUAL ingredient list.
+   * Score every recipe against
+   * every fridge ingredient.
    */
 
   const scored =
@@ -1295,9 +1520,7 @@ async function searchOnlineRecipes(
 
 
   /*
-   * Final ranking.
-   *
-   * Highest score first.
+   * Sort by the complete smart score.
    */
 
   scored.sort(
@@ -1316,6 +1539,19 @@ async function searchOnlineRecipes(
       }
 
 
+      if (
+        b.matchCount !==
+        a.matchCount
+      ) {
+
+        return (
+          b.matchCount -
+          a.matchCount
+        );
+
+      }
+
+
       return a.recipe.name.localeCompare(
         b.recipe.name
       );
@@ -1329,8 +1565,7 @@ async function searchOnlineRecipes(
 
 
   /*
-   * Convert into the format
-   * expected by index.html.
+   * Return up to 48 recipes.
    */
 
   return scored
@@ -1393,6 +1628,9 @@ async function searchOnlineRecipes(
 
           searchOverlap:
             item.searchOverlap,
+
+          combinationStrength:
+            item.combinationStrength,
 
           score:
             item.score,
@@ -1517,6 +1755,9 @@ function convertOnlineRecipeForApp(
     searchOverlap:
       recipe.searchOverlap || 0,
 
+    combinationStrength:
+      recipe.combinationStrength || 0,
+
     score:
       recipe.score || 0,
 
@@ -1556,5 +1797,5 @@ window.onlineRecipeSearch = {
 
 
 console.log(
-  "Smart online recipe search loaded."
+  "Combination-smart online recipe search loaded."
 );
