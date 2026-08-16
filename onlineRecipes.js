@@ -1,11 +1,11 @@
 /* =========================================================
    ONLINE RECIPES
-   Free online recipe search using TheMealDB
+   Recipe search through Cloudflare Worker
    Only returns recipes with calorie information
    ========================================================= */
 
-const THE_MEAL_DB_BASE =
-  "https://www.themealdb.com/api/json/v1/1";
+const RECIPE_WORKER_BASE =
+  "https://floral-sun-d01a.philuruguay29.workers.dev";
 
 
 /* =========================================================
@@ -64,6 +64,11 @@ const ingredientAliases = {
     "onions"
   ],
 
+  onions: [
+    "onion",
+    "onions"
+  ],
+
   garlic: [
     "garlic"
   ],
@@ -77,6 +82,11 @@ const ingredientAliases = {
   ],
 
   carrot: [
+    "carrot",
+    "carrots"
+  ],
+
+  carrots: [
     "carrot",
     "carrots"
   ],
@@ -315,7 +325,7 @@ async function fetchJSON(
   if (!response.ok) {
 
     throw new Error(
-      `Online recipe request failed: ${response.status}`
+      `Recipe request failed: ${response.status}`
     );
 
   }
@@ -327,128 +337,65 @@ async function fetchJSON(
 
 
 /* =========================================================
-   SEARCH ONE INGREDIENT
+   NORMALIZE RECIPE INGREDIENTS
    ========================================================= */
 
-async function searchIngredient(
-  ingredient
+function normalizeRecipeIngredients(
+  recipe
 ) {
-
-  const variations =
-    getIngredientVariations(
-      ingredient
-    );
-
-
-  const allMeals = [];
-
-
-  for (
-    const variation of variations
-  ) {
-
-    try {
-
-      const data =
-        await fetchJSON(
-          `${THE_MEAL_DB_BASE}/filter.php?i=${encodeURIComponent(
-            variation
-          )}`
-        );
-
-
-      if (
-        data &&
-        Array.isArray(data.meals)
-      ) {
-
-        data.meals.forEach(
-          function(meal) {
-
-            if (
-              !allMeals.some(
-                function(existing) {
-
-                  return (
-                    existing.idMeal ===
-                    meal.idMeal
-                  );
-
-                }
-              )
-            ) {
-
-              allMeals.push(
-                meal
-              );
-
-            }
-
-          }
-        );
-
-      }
-
-    }
-    catch (error) {
-
-      console.warn(
-        "Ingredient search failed:",
-        variation,
-        error
-      );
-
-    }
-
-  }
-
-
-  return allMeals;
-
-}
-
-
-/* =========================================================
-   GET FULL RECIPE DETAILS
-   ========================================================= */
-
-async function getDetails(
-  mealId
-) {
-
-  const data =
-    await fetchJSON(
-      `${THE_MEAL_DB_BASE}/lookup.php?i=${encodeURIComponent(
-        mealId
-      )}`
-    );
-
 
   if (
-    !data ||
-    !Array.isArray(data.meals) ||
-    !data.meals.length
+    Array.isArray(recipe.ingredients)
   ) {
 
-    return null;
+    return recipe.ingredients
+      .map(function(item) {
+
+        if (
+          typeof item === "string"
+        ) {
+
+          return item;
+
+        }
+
+        if (
+          item &&
+          typeof item === "object"
+        ) {
+
+          const name =
+            item.name ||
+            item.ingredient ||
+            item.item ||
+            "";
+
+          const measure =
+            item.measure ||
+            item.amount ||
+            "";
+
+          if (measure && name) {
+            return `${measure} ${name}`;
+          }
+
+          return name;
+
+        }
+
+        return "";
+
+      })
+      .filter(function(item) {
+
+        return String(item).trim().length > 0;
+
+      });
 
   }
 
 
-  return data.meals[0];
-
-}
-
-
-/* =========================================================
-   EXTRACT INGREDIENTS
-   ========================================================= */
-
-function extractIngredients(
-  meal
-) {
-
-  const ingredients = [];
+  const result = [];
 
 
   for (
@@ -458,29 +405,27 @@ function extractIngredients(
   ) {
 
     const ingredient =
-      meal[`strIngredient${i}`];
-
+      recipe[`strIngredient${i}`];
 
     const measure =
-      meal[`strMeasure${i}`];
+      recipe[`strMeasure${i}`];
 
 
     if (
       ingredient &&
-      ingredient.trim()
+      String(ingredient).trim()
     ) {
 
       const cleanIngredient =
-        ingredient.trim();
-
+        String(ingredient).trim();
 
       const cleanMeasure =
         measure
-          ? measure.trim()
+          ? String(measure).trim()
           : "";
 
 
-      ingredients.push(
+      result.push(
         cleanMeasure
           ? `${cleanMeasure} ${cleanIngredient}`
           : cleanIngredient
@@ -491,88 +436,66 @@ function extractIngredients(
   }
 
 
-  return ingredients;
+  return result;
 
 }
 
 
 /* =========================================================
-   EXTRACT INGREDIENT NAMES ONLY
+   INGREDIENT NAMES
    ========================================================= */
 
 function extractIngredientNames(
-  meal
+  recipe
 ) {
 
-  const ingredients = [];
+  return normalizeRecipeIngredients(
+    recipe
+  )
+    .map(function(item) {
 
+      return item
+        .replace(
+          /^\s*[\d./¼½¾⅓⅔⅛]+\s*(?:cups?|tbsp|tsp|tablespoons?|teaspoons?|oz|ounces?|lb|lbs|pounds?|g|grams?|kg|ml|cl)\s*/i,
+          ""
+        )
+        .trim()
+        .toLowerCase();
 
-  for (
-    let i = 1;
-    i <= 20;
-    i++
-  ) {
-
-    const ingredient =
-      meal[`strIngredient${i}`];
-
-
-    if (
-      ingredient &&
-      ingredient.trim()
-    ) {
-
-      ingredients.push(
-        ingredient
-          .trim()
-          .toLowerCase()
-      );
-
-    }
-
-  }
-
-
-  return ingredients;
+    });
 
 }
 
 
 /* =========================================================
-   CALORIE EXTRACTION
-   =========================================================
-
-   TheMealDB does not consistently provide calories.
-
-   We therefore look for calorie information in any
-   available recipe metadata or text.
-
-   Recipes without a usable calorie number are rejected.
+   EXTRACT CALORIES
    ========================================================= */
 
 function extractCalories(
-  meal
+  recipe
 ) {
 
-  const possibleFields = [
+  const possibleValues = [
 
-    meal.calories,
+    recipe.calories,
 
-    meal.strCalories,
+    recipe.Calories,
 
-    meal.Calories,
+    recipe.strCalories,
 
-    meal.strNutrition,
+    recipe.kcal,
 
-    meal.strNutritionalInformation,
+    recipe.nutrition &&
+      recipe.nutrition.calories,
 
-    meal.strNotes
+    recipe.nutrition &&
+      recipe.nutrition.kcal
 
   ];
 
 
   for (
-    const value of possibleFields
+    const value of possibleValues
   ) {
 
     if (
@@ -581,6 +504,17 @@ function extractCalories(
     ) {
 
       continue;
+
+    }
+
+
+    if (
+      typeof value === "number" &&
+      Number.isFinite(value) &&
+      value > 0
+    ) {
+
+      return Math.round(value);
 
     }
 
@@ -614,6 +548,22 @@ function extractCalories(
 
     }
 
+
+    const numeric =
+      Number(text);
+
+
+    if (
+      Number.isFinite(numeric) &&
+      numeric > 0
+    ) {
+
+      return Math.round(
+        numeric
+      );
+
+    }
+
   }
 
 
@@ -623,23 +573,16 @@ function extractCalories(
 
 
 /* =========================================================
-   CALORIE LOOKUP
-   =========================================================
-
-   TheMealDB itself does not reliably expose calorie
-   information for every recipe.
-
-   We attempt to find it from the recipe's available
-   nutritional fields. No invented calorie values are used.
+   HAS CALORIES
    ========================================================= */
 
 function hasCalories(
-  meal
+  recipe
 ) {
 
   const calories =
     extractCalories(
-      meal
+      recipe
     );
 
 
@@ -710,13 +653,13 @@ function ingredientMatches(
    ========================================================= */
 
 function calculateMatches(
-  meal,
+  recipe,
   fridgeIngredients
 ) {
 
   const recipeIngredients =
     extractIngredientNames(
-      meal
+      recipe
     );
 
 
@@ -761,10 +704,10 @@ function calculateMatches(
    ========================================================= */
 
 function convert(
-  meal
+  recipe
 ) {
 
-  if (!meal) {
+  if (!recipe) {
 
     return null;
 
@@ -772,15 +715,20 @@ function convert(
 
 
   /*
-   * IMPORTANT:
-   * Reject recipes without calories.
+   * The Cloudflare Worker already returns
+   * normalized recipe objects.
    */
 
   const calories =
     extractCalories(
-      meal
+      recipe
     );
 
+
+  /*
+   * Never show a recipe without
+   * a calorie count.
+   */
 
   if (
     calories === null ||
@@ -793,80 +741,237 @@ function convert(
 
 
   const ingredients =
-    extractIngredients(
-      meal
+    normalizeRecipeIngredients(
+      recipe
     );
 
 
-  const instructions =
-    meal.strInstructions
-      ? meal.strInstructions
-          .split(/\r?\n/)
-          .map(function(step) {
+  let instructions = [];
 
-            return step.trim();
 
-          })
-          .filter(function(step) {
+  if (
+    Array.isArray(
+      recipe.instructions
+    )
+  ) {
 
-            return step.length > 0;
+    instructions =
+      recipe.instructions
+        .map(function(step) {
 
-          })
+          return String(step)
+            .trim();
+
+        })
+        .filter(function(step) {
+
+          return step.length > 0;
+
+        });
+
+  }
+  else if (
+    typeof recipe.instructions ===
+    "string"
+  ) {
+
+    instructions =
+      recipe.instructions
+        .split(/\r?\n/)
+        .map(function(step) {
+
+          return step.trim();
+
+        })
+        .filter(function(step) {
+
+          return step.length > 0;
+
+        });
+
+  }
+  else if (
+    recipe.strInstructions
+  ) {
+
+    instructions =
+      String(
+        recipe.strInstructions
+      )
+        .split(/\r?\n/)
+        .map(function(step) {
+
+          return step.trim();
+
+        })
+        .filter(function(step) {
+
+          return step.length > 0;
+
+        });
+
+  }
+
+
+  let matchedIngredients =
+    Array.isArray(
+      recipe.matchedIngredients
+    )
+      ? recipe.matchedIngredients
       : [];
+
+
+  if (
+    !matchedIngredients.length
+  ) {
+
+    matchedIngredients =
+      calculateMatches(
+        recipe,
+        window.__currentRecipeFridgeIngredients || []
+      );
+
+  }
+
+
+  const matchCount =
+    Number(
+      recipe.matchCount
+    ) ||
+    matchedIngredients.length;
+
+
+  const id =
+    recipe.id ||
+    recipe.idMeal ||
+    recipe.recipeId ||
+    recipe.uuid ||
+    "";
+
+
+  const name =
+    recipe.name ||
+    recipe.title ||
+    recipe.strMeal ||
+    "Online Recipe";
+
+
+  const image =
+    recipe.image ||
+    recipe.imageUrl ||
+    recipe.thumbnail ||
+    recipe.strMealThumb ||
+    "";
+
+
+  const source =
+    recipe.source ||
+    recipe.sourceUrl ||
+    recipe.url ||
+    recipe.strSource ||
+    "";
+
+
+  const youtube =
+    recipe.youtube ||
+    recipe.youtubeUrl ||
+    recipe.video ||
+    recipe.strYoutube ||
+    "";
+
+
+  const category =
+    recipe.category ||
+    recipe.type ||
+    recipe.strCategory ||
+    "";
+
+
+  const area =
+    recipe.area ||
+    recipe.cuisine ||
+    recipe.strArea ||
+    "";
+
+
+  const protein =
+    recipe.protein !== undefined &&
+    recipe.protein !== null
+      ? recipe.protein
+      : (
+          recipe.nutrition &&
+          recipe.nutrition.protein !== undefined
+            ? recipe.nutrition.protein
+            : null
+        );
 
 
   return {
 
     id:
-      meal.idMeal,
+
+      id,
 
     name:
-      meal.strMeal || "Online Recipe",
+
+      name,
 
     category:
-      meal.strCategory || "",
+
+      category,
 
     area:
-      meal.strArea || "",
+
+      area,
 
     image:
-      meal.strMealThumb || "",
+
+      image,
 
     source:
-      meal.strSource || "",
+
+      source,
 
     youtube:
-      meal.strYoutube || "",
+
+      youtube,
 
     ingredients:
+
       ingredients,
 
     instructions:
+
       instructions,
 
     calories:
+
       calories,
 
-    /*
-     * We intentionally do not invent protein.
-     */
-
     protein:
-      null,
+
+      protein,
 
     difficulty:
+
       "Online",
 
     tags:
-      [],
+
+      Array.isArray(recipe.tags)
+        ? recipe.tags
+        : [],
 
     matchCount:
-      0,
+
+      matchCount,
 
     matchedIngredients:
-      [],
+
+      matchedIngredients,
 
     online:
+
       true
 
   };
@@ -888,7 +993,9 @@ async function search(
 
 
   if (
-    !Array.isArray(fridgeIngredients) ||
+    !Array.isArray(
+      fridgeIngredients
+    ) ||
     !fridgeIngredients.length
   ) {
 
@@ -899,6 +1006,7 @@ async function search(
 
   const cleanedIngredients =
     fridgeIngredients
+
       .map(function(item) {
 
         return normalizeIngredient(
@@ -906,16 +1014,13 @@ async function search(
         );
 
       })
+
       .filter(function(item) {
 
         return item.length > 0;
 
       });
 
-
-  /*
-   * Remove duplicates.
-   */
 
   const uniqueIngredients =
     [
@@ -925,169 +1030,115 @@ async function search(
     ];
 
 
-  /*
-   * Search each ingredient.
-   */
-
-  const mealMap =
-    new Map();
-
-
-  for (
-    const ingredient
-    of uniqueIngredients
+  if (
+    !uniqueIngredients.length
   ) {
 
-    const meals =
-      await searchIngredient(
-        ingredient
-      );
+    return [];
+
+  }
 
 
-    meals.forEach(
-      function(meal) {
+  /*
+   * Give the Worker the ingredients
+   * in one request.
+   */
 
-        if (
-          !mealMap.has(
-            meal.idMeal
-          )
-        ) {
-
-          mealMap.set(
-            meal.idMeal,
-            {
-              meal: meal,
-              possibleMatches: []
-            }
-          );
-
-        }
+  const ingredientsParam =
+    uniqueIngredients.join(",");
 
 
-        mealMap
-          .get(meal.idMeal)
-          .possibleMatches
-          .push(
-            ingredient
-          );
+  const url =
+    `${RECIPE_WORKER_BASE}/search?ingredients=${encodeURIComponent(
+      ingredientsParam
+    )}`;
 
-      }
+
+  const data =
+    await fetchJSON(
+      url
     );
 
-  }
 
-
-  /*
-   * Get complete recipe details.
-   */
-
-  const detailResults = [];
-
-
-  for (
-    const entry
-    of mealMap.values()
+  if (
+    !data ||
+    !Array.isArray(
+      data.recipes
+    )
   ) {
 
-    try {
-
-      const details =
-        await getDetails(
-          entry.meal.idMeal
-        );
-
-
-      if (!details) {
-
-        continue;
-
-      }
-
-
-      /*
-       * IMPORTANT:
-       * Only keep recipes with calories.
-       */
-
-      if (
-        !hasCalories(details)
-      ) {
-
-        continue;
-
-      }
-
-
-      const matchedIngredients =
-        calculateMatches(
-          details,
-          uniqueIngredients
-        );
-
-
-      /*
-       * Only keep recipes that actually match
-       * at least one fridge ingredient.
-       */
-
-      if (
-        matchedIngredients.length === 0
-      ) {
-
-        continue;
-
-      }
-
-
-      const converted =
-        convert(
-          details
-        );
-
-
-      if (!converted) {
-
-        continue;
-
-      }
-
-
-      converted.matchCount =
-        matchedIngredients.length;
-
-
-      converted.matchedIngredients =
-        matchedIngredients;
-
-
-      detailResults.push(
-        converted
-      );
-
-    }
-    catch (error) {
-
-      console.warn(
-        "Could not load recipe details:",
-        entry.meal.idMeal,
-        error
-      );
-
-    }
+    return [];
 
   }
 
 
   /*
-   * Sort:
-   *
-   * 1. Most fridge matches
-   * 2. Recipes with more ingredients matching
-   * 3. Alphabetically
+   * Make the fridge ingredients available
+   * to convert() for match calculation.
    */
 
-  detailResults.sort(
-    function(a,b) {
+  window.__currentRecipeFridgeIngredients =
+    uniqueIngredients;
+
+
+  const results =
+    data.recipes
+
+      .map(function(recipe) {
+
+        return convert(
+          recipe
+        );
+
+      })
+
+      .filter(function(recipe) {
+
+        return recipe !== null;
+
+      });
+
+
+  /*
+   * Make sure match information exists
+   * even if the Worker did not provide it.
+   */
+
+  results.forEach(
+    function(recipe) {
+
+      if (
+        !Array.isArray(
+          recipe.matchedIngredients
+        ) ||
+        !recipe.matchedIngredients.length
+      ) {
+
+        recipe.matchedIngredients =
+          calculateMatches(
+            recipe,
+            uniqueIngredients
+          );
+
+      }
+
+
+      recipe.matchCount =
+        Number(
+          recipe.matchCount
+        ) ||
+        recipe.matchedIngredients.length;
+
+    }
+  );
+
+
+  /*
+   * Sort strongest matches first.
+   */
+
+  results.sort(
+    function(a, b) {
 
       if (
         b.matchCount !==
@@ -1111,7 +1162,7 @@ async function search(
 
 
   /*
-   * Remove duplicates by recipe ID.
+   * Remove duplicate recipes.
    */
 
   const uniqueResults = [];
@@ -1119,11 +1170,18 @@ async function search(
   const seen = new Set();
 
 
-  detailResults.forEach(
+  results.forEach(
     function(recipe) {
 
+      const key =
+        String(
+          recipe.id ||
+          recipe.name
+        );
+
+
       if (
-        seen.has(recipe.id)
+        seen.has(key)
       ) {
 
         return;
@@ -1131,10 +1189,7 @@ async function search(
       }
 
 
-      seen.add(
-        recipe.id
-      );
-
+      seen.add(key);
 
       uniqueResults.push(
         recipe
@@ -1153,21 +1208,71 @@ async function search(
 
 
 /* =========================================================
+   GET DETAILS
+   ========================================================= */
+
+async function getDetails(
+  recipeId
+) {
+
+  /*
+   * The Worker already returns the
+   * complete recipe information used
+   * by the planner.
+   *
+   * Search the current results first.
+   */
+
+  const cached =
+    window.__onlineRecipeCache || [];
+
+
+  const found =
+    cached.find(
+      function(recipe) {
+
+        return String(
+          recipe.id
+        ) === String(
+          recipeId
+        );
+
+      }
+    );
+
+
+  if (found) {
+
+    return found;
+
+  }
+
+
+  return null;
+
+}
+
+
+/* =========================================================
    PUBLIC API
    ========================================================= */
 
 window.onlineRecipeSearch = {
 
   search:
+
     search,
 
   getDetails:
+
     getDetails,
 
   convert:
+
     convert,
 
   normalizeIngredient:
+
     normalizeIngredient
 
 };
