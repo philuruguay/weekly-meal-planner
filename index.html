@@ -538,16 +538,6 @@ textarea {
   cursor: pointer;
 }
 
-.use-online-button {
-  margin-top: 15px;
-}
-
-.online-loading {
-  text-align: center;
-  padding: 25px;
-  color: #68736b;
-}
-
 .online-source {
   display: inline-block;
   margin-top: 10px;
@@ -571,35 +561,26 @@ textarea {
 }
 
 .use-recipe-panel h3 {
-  margin: 0 0 12px;
+  margin: 0 0 8px;
   color: #35523d;
 }
 
 .use-recipe-panel p {
-  margin: 0 0 12px;
+  margin: 0 0 15px;
   color: #68736b;
   font-size: 14px;
 }
 
-.use-recipe-options {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+.use-recipe-panel label {
+  margin-top: 12px;
 }
 
-.use-recipe-option {
-  border: 1px solid #cbd5cd;
-  border-radius: 10px;
-  padding: 12px;
+.use-recipe-panel select {
   background: white;
-  color: #35523d;
-  font-weight: 650;
-  cursor: pointer;
 }
 
-.use-recipe-option:hover {
-  background: #f5f8f5;
-  border-color: #42634b;
+.use-online-button {
+  margin-top: 15px;
 }
 
 .online-added-message {
@@ -629,8 +610,7 @@ textarea {
 
   .goal-grid,
   .summary,
-  .online-recipe-grid,
-  .use-recipe-options {
+  .online-recipe-grid {
     grid-template-columns: 1fr;
   }
 
@@ -656,7 +636,6 @@ textarea {
 
 
 <body>
-
 
 <div class="app">
 
@@ -945,10 +924,6 @@ onclick="showGroceryList()"
 </div>
 
 
-<!-- ======================================================
-     ONLINE RESULTS
-     ====================================================== -->
-
 <div
 id="onlineRecipesSection"
 class="card online-section hidden"
@@ -1017,7 +992,7 @@ onclick="showPlan()"
 
 
 <!-- ======================================================
-     ONLINE RECIPE DETAIL
+     ONLINE RECIPE DETAIL SCREEN
      ====================================================== -->
 
 <section
@@ -1324,7 +1299,7 @@ recipes.filter(
 function(recipe) {
 
 const disliked =
-recipe.tags.some(
+(recipe.tags || []).some(
 function(tag) {
 
 return dislikes.includes(
@@ -1643,7 +1618,7 @@ targetCalories
 chosenMeals.forEach(
 function(meal) {
 
-meal.tags.forEach(
+(meal.tags || []).forEach(
 function(tag) {
 
 if (
@@ -2413,7 +2388,7 @@ moreContainer.innerHTML =
 
 
 /* ======================================================
-   SHOW MORE
+   SHOW MORE ONLINE RECIPES
    ====================================================== */
 
 function showMoreOnlineRecipes() {
@@ -2561,6 +2536,28 @@ Watch Recipe Video
 : "";
 
 
+/*
+==========================================================
+DAY OPTIONS
+==========================================================
+*/
+
+const dayOptions =
+currentPlan
+.map(
+function(day, dayIndex) {
+
+return `
+<option value="${dayIndex}">
+${escapeHtml(day.day)}
+</option>
+`;
+
+}
+)
+.join("");
+
+
 document.getElementById(
 "onlineRecipeContent"
 ).innerHTML = `
@@ -2698,44 +2695,54 @@ ${youtubeHTML}
 </h3>
 
 <p>
-Choose which type of meal you want this online recipe to replace.
+Choose exactly which day and meal this recipe should replace.
 </p>
 
 
-<div class="use-recipe-options">
+<label for="onlineRecipeDay">
+Day
+</label>
 
-<button
-class="use-recipe-option"
-onclick="useOnlineRecipe(${index}, 'Breakfast')"
->
+<select id="onlineRecipeDay">
+
+${dayOptions}
+
+</select>
+
+
+<label for="onlineRecipeMeal">
+Meal
+</label>
+
+<select id="onlineRecipeMeal">
+
+<option value="Breakfast">
 🌅 Breakfast
-</button>
+</option>
 
-
-<button
-class="use-recipe-option"
-onclick="useOnlineRecipe(${index}, 'Lunch')"
->
+<option value="Lunch">
 🥗 Lunch
-</button>
+</option>
 
-
-<button
-class="use-recipe-option"
-onclick="useOnlineRecipe(${index}, 'Dinner')"
->
+<option value="Dinner">
 🍽️ Dinner
-</button>
+</option>
+
+<option value="Snack">
+🍎 Snack
+</option>
+
+</select>
 
 
 <button
-class="use-recipe-option"
-onclick="useOnlineRecipe(${index}, 'Snack')"
+class="use-online-button"
+onclick="useOnlineRecipe(${index})"
 >
-🍎 Snack
-</button>
 
-</div>
+➕ Add to Selected Meal
+
+</button>
 
 
 <div id="onlineUseMessage"></div>
@@ -2764,12 +2771,11 @@ window.scrollTo(
 
 
 /* ======================================================
-   USE ONLINE RECIPE IN MEAL PLAN
+   USE ONLINE RECIPE IN SELECTED DAY + MEAL
    ====================================================== */
 
 function useOnlineRecipe(
-onlineIndex,
-mealType
+onlineIndex
 ) {
 
 const recipe =
@@ -2796,24 +2802,40 @@ return;
 }
 
 
-/*
-==========================================================
-FIND THE FIRST MEAL OF THE SELECTED TYPE
-==========================================================
-*/
-
-let targetDayIndex =
--1;
-
-let targetMealIndex =
--1;
+const daySelect =
+document.getElementById(
+"onlineRecipeDay"
+);
 
 
-for (
-let dayIndex = 0;
-dayIndex < currentPlan.length;
-dayIndex++
+const mealSelect =
+document.getElementById(
+"onlineRecipeMeal"
+);
+
+
+const dayIndex =
+Number(
+daySelect.value
+);
+
+
+const mealType =
+mealSelect.value;
+
+
+if (
+!currentPlan[dayIndex]
 ) {
+
+alert(
+"Please select a valid day."
+);
+
+return;
+
+}
+
 
 const mealIndex =
 currentPlan[
@@ -2828,34 +2850,11 @@ return meal.type === mealType;
 
 
 if (
-mealIndex !== -1
-) {
-
-targetDayIndex =
-dayIndex;
-
-targetMealIndex =
-mealIndex;
-
-break;
-
-}
-
-}
-
-
-/*
-==========================================================
-IF THE TYPE IS NOT FOUND
-==========================================================
-*/
-
-if (
-targetDayIndex === -1
+mealIndex === -1
 ) {
 
 alert(
-`There is no ${mealType.toLowerCase()} in the current meal plan.`
+`There is no ${mealType.toLowerCase()} in the selected day.`
 );
 
 return;
@@ -2865,14 +2864,14 @@ return;
 
 /*
 ==========================================================
-CREATE APP-FRIENDLY ONLINE RECIPE
+CREATE ONLINE MEAL
 ==========================================================
 */
 
 const onlineMeal = {
 
 id:
-`online-${recipe.id}`,
+`online-${recipe.id}-${Date.now()}`,
 
 name:
 recipe.name,
@@ -2894,7 +2893,7 @@ tags: [
 ],
 
 ingredients:
-recipe.ingredients.map(
+(recipe.ingredients || []).map(
 function(item) {
 
 return item;
@@ -2903,12 +2902,19 @@ return item;
 ),
 
 instructions:
-recipe.instructions,
+(recipe.instructions || []).map(
+function(item) {
+
+return item;
+
+}
+),
 
 description:
-`Online recipe using ${(
-recipe.matchedIngredients || []
-).join(", ")}.`,
+`Online recipe using ${
+(recipe.matchedIngredients || [])
+.join(", ")
+}.`,
 
 image:
 recipe.image,
@@ -2927,21 +2933,21 @@ true
 
 /*
 ==========================================================
-REPLACE THE MEAL
+REPLACE THE SELECTED MEAL
 ==========================================================
 */
 
 currentPlan[
-targetDayIndex
+dayIndex
 ].meals[
-targetMealIndex
+mealIndex
 ] =
 onlineMeal;
 
 
 /*
 ==========================================================
-UPDATE THE PLAN
+UPDATE PLAN
 ==========================================================
 */
 
@@ -2952,7 +2958,7 @@ updateFridgeSummary();
 
 /*
 ==========================================================
-SHOW CONFIRMATION
+CONFIRMATION
 ==========================================================
 */
 
@@ -2971,9 +2977,11 @@ message.innerHTML = `
 ✓ ${escapeHtml(
 recipe.name
 )}
-was added to ${currentPlan[
-targetDayIndex
-].day}'s ${mealType.toLowerCase()}.
+was added to ${escapeHtml(
+currentPlan[dayIndex].day
+)}'s ${escapeHtml(
+mealType.toLowerCase()
+)}.
 
 <br><br>
 
@@ -3096,7 +3104,7 @@ ${fridgeMatches.join(
 
 
 const ingredientsHTML =
-meal.ingredients
+(meal.ingredients || [])
 .map(
 function(item) {
 
@@ -3112,7 +3120,7 @@ ${escapeHtml(item)}
 
 
 const instructionsHTML =
-meal.instructions
+(meal.instructions || [])
 .map(
 function(item) {
 
@@ -3153,6 +3161,7 @@ ${fridgeMessage}
 
 
 <div class="nutrition">
+
 
 <span>
 
@@ -3229,6 +3238,29 @@ ${instructionsHTML}
 </ol>
 
 </div>
+
+
+${
+meal.source
+
+? `
+
+<a
+class="online-source"
+href="${escapeHtmlAttribute(
+meal.source
+)}"
+target="_blank"
+rel="noopener noreferrer"
+>
+View Original Recipe
+</a>
+
+`
+
+: ""
+
+}
 
 
 <button
@@ -3311,7 +3343,7 @@ return false;
 
 
 const disliked =
-recipe.tags.some(
+(recipe.tags || []).some(
 function(tag) {
 
 return dislikes.includes(
@@ -3699,7 +3731,7 @@ function(day) {
 day.meals.forEach(
 function(meal) {
 
-meal.ingredients.forEach(
+(meal.ingredients || []).forEach(
 function(ingredient) {
 
 
