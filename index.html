@@ -81,6 +81,12 @@
       margin-bottom: 9px;
     }
 
+    .field-help {
+      color: #68736b;
+      font-size: 13px;
+      margin-top: 7px;
+    }
+
     input,
     textarea,
     select {
@@ -121,6 +127,26 @@
       border-color: #42634b;
       background: #edf4ee;
       font-weight: 650;
+    }
+
+    .fridge-box {
+      border: 1px solid #d8ded9;
+      border-radius: 14px;
+      padding: 16px;
+      background: #fafcf9;
+    }
+
+    .fridge-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .fridge-description {
+      color: #68736b;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 12px;
     }
 
     .generate-button {
@@ -189,6 +215,17 @@
       color: #68736b;
       font-size: 13px;
       margin-top: 4px;
+    }
+
+    .fridge-summary {
+      background: #fff8e8;
+      border: 1px solid #ead9a7;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      color: #66531e;
+      font-size: 14px;
+      line-height: 1.5;
     }
 
     .day-card {
@@ -419,7 +456,7 @@
   </header>
 
 
-  <!-- SETUP -->
+  <!-- SETUP SCREEN -->
 
   <section id="setupScreen">
 
@@ -516,6 +553,37 @@
       </div>
 
 
+      <!-- NEW FRIDGE FEATURE -->
+
+      <div class="field">
+
+        <div class="fridge-box">
+
+          <div class="fridge-title">
+            🥕 What's in your fridge?
+          </div>
+
+          <div class="fridge-description">
+            Enter ingredients you already have.
+            The planner will prioritize meals that
+            use them.
+          </div>
+
+          <textarea
+            id="fridge"
+            placeholder="Example: chicken, rice, broccoli, eggs, Greek yogurt..."
+          ></textarea>
+
+          <div class="field-help">
+            You can enter as many ingredients as you want,
+            separated by commas.
+          </div>
+
+        </div>
+
+      </div>
+
+
       <div class="field">
 
         <label for="difficulty">
@@ -558,7 +626,7 @@
   </section>
 
 
-  <!-- PLAN -->
+  <!-- PLAN SCREEN -->
 
   <section
     id="planScreen"
@@ -635,6 +703,12 @@
       </div>
 
 
+      <div
+        id="fridgeSummary"
+        class="fridge-summary hidden"
+      ></div>
+
+
       <div id="mealPlan"></div>
 
 
@@ -650,7 +724,7 @@
   </section>
 
 
-  <!-- RECIPE -->
+  <!-- RECIPE SCREEN -->
 
   <section
     id="recipeScreen"
@@ -673,7 +747,7 @@
   </section>
 
 
-  <!-- GROCERY -->
+  <!-- GROCERY SCREEN -->
 
   <section
     id="groceryScreen"
@@ -709,10 +783,7 @@
 </div>
 
 
-<!--
-  IMPORTANT:
-  Load recipes.js BEFORE the app code.
--->
+<!-- LOAD THE RECIPE LIBRARY FIRST -->
 
 <script src="recipes.js"></script>
 
@@ -738,18 +809,7 @@ let currentRecipeIndex = null;
 
 let currentTargetCalories = 1800;
 
-
-/* =========================================================
-   CHECK RECIPE LIBRARY
-   ========================================================= */
-
-if (!recipes.length) {
-
-  console.error(
-    "Recipe library could not be loaded."
-  );
-
-}
+let currentFridgeIngredients = [];
 
 
 /* =========================================================
@@ -785,7 +845,7 @@ document
 
 
 /* =========================================================
-   SELECTED GOAL
+   GET SELECTED GOAL
    ========================================================= */
 
 function getSelectedGoal() {
@@ -798,6 +858,69 @@ function getSelectedGoal() {
   return selected
     ? selected.dataset.goal
     : "healthy";
+
+}
+
+
+/* =========================================================
+   CLEAN INGREDIENT INPUT
+   ========================================================= */
+
+function parseIngredients(text) {
+
+  return text
+    .toLowerCase()
+    .split(",")
+    .map(function(item) {
+
+      return item.trim();
+
+    })
+    .filter(function(item) {
+
+      return item.length > 0;
+
+    });
+
+}
+
+
+/* =========================================================
+   CHECK WHETHER RECIPE USES FRIDGE INGREDIENT
+   ========================================================= */
+
+function getFridgeMatches(recipe) {
+
+  if (
+    !currentFridgeIngredients.length
+  ) {
+
+    return [];
+
+  }
+
+
+  const recipeText = [
+
+    recipe.name,
+
+    ...(recipe.tags || []),
+
+    ...(recipe.ingredients || [])
+
+  ]
+    .join(" ")
+    .toLowerCase();
+
+
+  return currentFridgeIngredients
+    .filter(function(ingredient) {
+
+      return recipeText.includes(
+        ingredient
+      );
+
+    });
 
 }
 
@@ -828,6 +951,12 @@ function generatePlan() {
       "dislikes"
     ).value
     .toLowerCase();
+
+
+  const fridge =
+    document.getElementById(
+      "fridge"
+    ).value;
 
 
   const difficulty =
@@ -862,6 +991,12 @@ function generatePlan() {
     calories;
 
 
+  currentFridgeIngredients =
+    parseIngredients(
+      fridge
+    );
+
+
   let availableRecipes =
     recipes.filter(
       function(recipe) {
@@ -879,7 +1014,9 @@ function generatePlan() {
 
 
         if (disliked) {
+
           return false;
+
         }
 
 
@@ -1002,6 +1139,9 @@ function generatePlan() {
     averageProtein + "g";
 
 
+  updateFridgeSummary();
+
+
   renderPlan();
 
   showPlan();
@@ -1085,12 +1225,10 @@ function buildBestDay(
 
 
   /*
-   * We don't need to check every possible
-   * combination. Instead we sample a large
-   * number of possibilities from the library.
+   * Test many possible combinations.
    */
 
-  const attempts = 500;
+  const attempts = 700;
 
 
   for (
@@ -1168,9 +1306,9 @@ function buildBestDay(
       );
 
 
-    /*
-     * Reward foods the user likes.
-     */
+    /* =====================================================
+       FAVOR FOODS USER LIKES
+       ===================================================== */
 
     chosenMeals.forEach(
       function(meal) {
@@ -1193,11 +1331,44 @@ function buildBestDay(
     );
 
 
-    /*
-     * High protein goal.
-     */
+    /* =====================================================
+       FAVOR FRIDGE INGREDIENTS
+       ===================================================== */
 
-    if (goal === "protein") {
+    if (
+      currentFridgeIngredients.length
+    ) {
+
+      chosenMeals.forEach(
+        function(meal) {
+
+          const matches =
+            getFridgeMatches(
+              meal
+            );
+
+
+          /*
+           * Strong reward for using
+           * ingredients already available.
+           */
+
+          score -=
+            matches.length * 120;
+
+        }
+      );
+
+    }
+
+
+    /* =====================================================
+       HIGH PROTEIN GOAL
+       ===================================================== */
+
+    if (
+      goal === "protein"
+    ) {
 
       score -=
         totalProtein * 2;
@@ -1205,12 +1376,13 @@ function buildBestDay(
     }
 
 
-    /*
-     * Healthy goal slightly favors
-     * higher protein meals.
-     */
+    /* =====================================================
+       HEALTHY GOAL
+       ===================================================== */
 
-    if (goal === "healthy") {
+    if (
+      goal === "healthy"
+    ) {
 
       score -=
         totalProtein * 0.5;
@@ -1218,12 +1390,13 @@ function buildBestDay(
     }
 
 
-    /*
-     * Avoid repeating meals from
-     * the previous day.
-     */
+    /* =====================================================
+       AVOID REPEATING PREVIOUS DAY
+       ===================================================== */
 
-    if (dayIndex > 0) {
+    if (
+      dayIndex > 0
+    ) {
 
       const previousDay =
         currentPlan[
@@ -1244,7 +1417,7 @@ function buildBestDay(
                   previousMeal.id
                 ) {
 
-                  score += 50;
+                  score += 70;
 
                 }
 
@@ -1258,6 +1431,10 @@ function buildBestDay(
 
     }
 
+
+    /* =====================================================
+       SAVE BEST COMBINATION
+       ===================================================== */
 
     if (
       score <
@@ -1288,62 +1465,46 @@ function buildFallbackDay(
   availableRecipes
 ) {
 
-  const breakfast =
+  return [
+
     availableRecipes.find(
       recipe =>
         recipe.type ===
         "Breakfast"
-    );
-
-
-  const lunch =
-    availableRecipes.find(
-      recipe =>
-        recipe.type ===
-        "Lunch"
-    );
-
-
-  const dinner =
-    availableRecipes.find(
-      recipe =>
-        recipe.type ===
-        "Dinner"
-    );
-
-
-  const snack =
-    availableRecipes.find(
-      recipe =>
-        recipe.type ===
-        "Snack"
-    );
-
-
-  return [
-
-    breakfast ||
+    ) ||
       recipes.find(
         recipe =>
           recipe.type ===
           "Breakfast"
       ),
 
-    lunch ||
+    availableRecipes.find(
+      recipe =>
+        recipe.type ===
+        "Lunch"
+    ) ||
       recipes.find(
         recipe =>
           recipe.type ===
           "Lunch"
       ),
 
-    dinner ||
+    availableRecipes.find(
+      recipe =>
+        recipe.type ===
+        "Dinner"
+    ) ||
       recipes.find(
         recipe =>
           recipe.type ===
           "Dinner"
       ),
 
-    snack ||
+    availableRecipes.find(
+      recipe =>
+        recipe.type ===
+        "Snack"
+    ) ||
       recipes.find(
         recipe =>
           recipe.type ===
@@ -1369,6 +1530,110 @@ function randomItem(
       array.length
     )
   ];
+
+}
+
+
+/* =========================================================
+   FRIDGE SUMMARY
+   ========================================================= */
+
+function updateFridgeSummary() {
+
+  const box =
+    document.getElementById(
+      "fridgeSummary"
+    );
+
+
+  if (
+    !currentFridgeIngredients.length
+  ) {
+
+    box.classList.add(
+      "hidden"
+    );
+
+    box.innerHTML =
+      "";
+
+    return;
+
+  }
+
+
+  const usedIngredients =
+    new Set();
+
+
+  currentPlan.forEach(
+    function(day) {
+
+      day.meals.forEach(
+        function(meal) {
+
+          getFridgeMatches(
+            meal
+          ).forEach(
+            function(match) {
+
+              usedIngredients.add(
+                match
+              );
+
+            }
+          );
+
+        }
+      );
+
+    }
+  );
+
+
+  const used =
+    [...usedIngredients];
+
+
+  const unused =
+    currentFridgeIngredients.filter(
+      function(item) {
+
+        return !used.includes(
+          item
+        );
+
+      }
+    );
+
+
+  let message =
+    `<strong>🥕 Using ingredients you already have:</strong> ${used.length}`;
+
+
+  if (used.length) {
+
+    message +=
+      `<br>${used.join(", ")}`;
+
+  }
+
+
+  if (unused.length) {
+
+    message +=
+      `<br><br><strong>Not used this week:</strong> ${unused.join(", ")}`;
+
+  }
+
+
+  box.innerHTML =
+    message;
+
+
+  box.classList.remove(
+    "hidden"
+  );
 
 }
 
@@ -1459,6 +1724,18 @@ function renderPlan() {
       day.meals.forEach(
         function(meal, mealIndex) {
 
+          const fridgeMatches =
+            getFridgeMatches(
+              meal
+            );
+
+
+          const fridgeBadge =
+            fridgeMatches.length
+              ? " 🥕"
+              : "";
+
+
           mealsHTML += `
 
             <div class="meal-row">
@@ -1471,6 +1748,7 @@ function renderPlan() {
 
                 <div class="meal-name">
                   ${meal.name}
+                  ${fridgeBadge}
                 </div>
 
                 <div class="meal-info">
@@ -1585,6 +1863,23 @@ function showRecipe(
     ];
 
 
+  const fridgeMatches =
+    getFridgeMatches(
+      meal
+    );
+
+
+  const fridgeMessage =
+    fridgeMatches.length
+      ? `
+        <div class="fridge-summary">
+          🥕 Uses ingredients you already have:
+          ${fridgeMatches.join(", ")}
+        </div>
+      `
+      : "";
+
+
   const ingredientsHTML =
     meal.ingredients
       .map(
@@ -1628,6 +1923,8 @@ function showRecipe(
     <p class="recipe-description">
       ${meal.description}
     </p>
+
+    ${fridgeMessage}
 
     <div class="nutrition">
 
@@ -1772,6 +2069,39 @@ function replaceCurrentMeal() {
     );
 
 
+  /*
+   * Prefer replacement recipes that
+   * also use fridge ingredients.
+   */
+
+  if (
+    currentFridgeIngredients.length
+  ) {
+
+    const fridgeReplacements =
+      replacements.filter(
+        function(recipe) {
+
+          return getFridgeMatches(
+            recipe
+          ).length > 0;
+
+        }
+      );
+
+
+    if (
+      fridgeReplacements.length
+    ) {
+
+      replacements =
+        fridgeReplacements;
+
+    }
+
+  }
+
+
   if (
     !replacements.length
   ) {
@@ -1808,6 +2138,8 @@ function replaceCurrentMeal() {
 
 
   renderPlan();
+
+  updateFridgeSummary();
 
 
   showRecipe(
@@ -2264,6 +2596,7 @@ function showGroceryScreen() {
   );
 
 }
+
 
 </script>
 
