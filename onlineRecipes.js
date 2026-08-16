@@ -3,15 +3,19 @@
 ONLINE RECIPE SEARCH
 FREE THEMEALDB VERSION
 
+SMART MATCHING VERSION
+
 - Searches each fridge ingredient
 - Combines all candidate recipes
-- Prioritizes multi-ingredient matches
-- Downloads full recipe details
-- Scores actual ingredient matches
+- Checks the actual ingredient list
+- Prioritizes recipes using ALL fridge ingredients
+- Then 2/3, 1/3, etc.
+- Gives extra weight to recipes using a larger
+  percentage of the user's fridge ingredients
 - Returns up to 48 recipes
-- index.html displays 12 at a time
 =========================================================
 */
+
 
 const THE_MEAL_DB_BASE =
   "https://www.themealdb.com/api/json/v1/1";
@@ -416,26 +420,39 @@ function getCanonicalIngredient(value) {
   const text =
     normalizeText(value);
 
+
   if (!text) {
 
     return "";
 
   }
 
+
   const groups =
     Object.keys(
       ingredientGroups
     );
 
-  for (const group of groups) {
+
+  for (
+    const group
+    of groups
+  ) {
 
     const aliases =
       ingredientGroups[group];
 
-    for (const alias of aliases) {
+
+    for (
+      const alias
+      of aliases
+    ) {
 
       const normalizedAlias =
-        normalizeText(alias);
+        normalizeText(
+          alias
+        );
+
 
       if (
         text === normalizedAlias ||
@@ -449,6 +466,7 @@ function getCanonicalIngredient(value) {
     }
 
   }
+
 
   return text
     .replace(/ies$/, "y")
@@ -466,10 +484,12 @@ async function searchMealDB(term) {
   const url =
     `${THE_MEAL_DB_BASE}/filter.php?i=${encodeURIComponent(term)}`;
 
+
   try {
 
     const response =
       await fetch(url);
+
 
     if (!response.ok) {
 
@@ -479,8 +499,10 @@ async function searchMealDB(term) {
 
     }
 
+
     const data =
       await response.json();
+
 
     return data.meals || [];
 
@@ -493,6 +515,7 @@ async function searchMealDB(term) {
       term,
       error
     );
+
 
     return [];
 
@@ -514,14 +537,19 @@ async function searchIngredientGroup(
       canonical
     ];
 
+
   const results =
     await Promise.all(
 
-      terms.map(function(term) {
+      terms.map(
+        function(term) {
 
-        return searchMealDB(term);
+          return searchMealDB(
+            term
+          );
 
-      })
+        }
+      )
 
     );
 
@@ -529,33 +557,38 @@ async function searchIngredientGroup(
   const meals =
     [];
 
+
   const seen =
     new Set();
 
 
-  results.forEach(function(list) {
+  results.forEach(
+    function(list) {
 
-    list.forEach(function(meal) {
+      list.forEach(
+        function(meal) {
 
-      if (
-        !seen.has(
-          meal.idMeal
-        )
-      ) {
+          if (
+            !seen.has(
+              meal.idMeal
+            )
+          ) {
 
-        seen.add(
-          meal.idMeal
-        );
+            seen.add(
+              meal.idMeal
+            );
 
-        meals.push(
-          meal
-        );
+            meals.push(
+              meal
+            );
 
-      }
+          }
 
-    });
+        }
+      );
 
-  });
+    }
+  );
 
 
   return meals;
@@ -574,10 +607,12 @@ async function getRecipeDetails(
   const url =
     `${THE_MEAL_DB_BASE}/lookup.php?i=${encodeURIComponent(mealId)}`;
 
+
   try {
 
     const response =
       await fetch(url);
+
 
     if (!response.ok) {
 
@@ -586,6 +621,7 @@ async function getRecipeDetails(
       );
 
     }
+
 
     const data =
       await response.json();
@@ -619,6 +655,7 @@ async function getRecipeDetails(
         meal[
           `strIngredient${i}`
         ];
+
 
       const measure =
         meal[
@@ -691,6 +728,7 @@ async function getRecipeDetails(
       mealId,
       error
     );
+
 
     return null;
 
@@ -796,13 +834,13 @@ function scoreRecipe(
   const matched =
     [];
 
+
   const missing =
     [];
 
 
   userIngredients.forEach(
     function(ingredient) {
-
 
       if (
         recipeContainsIngredient(
@@ -829,10 +867,107 @@ function scoreRecipe(
   );
 
 
+  const matchCount =
+    matched.length;
+
+
+  const totalFridgeIngredients =
+    userIngredients.length;
+
+
+  const matchPercentage =
+    totalFridgeIngredients > 0
+
+      ? matchCount /
+        totalFridgeIngredients
+
+      : 0;
+
+
   const searchOverlap =
     candidateCounts[
       recipe.id
     ] || 0;
+
+
+  /*
+   * Number of ingredients in the
+   * actual recipe.
+   */
+
+  const recipeIngredientCount =
+    recipe.ingredients.length;
+
+
+  /*
+   * A smaller recipe with the same
+   * number of matches gets a slight
+   * advantage because your fridge
+   * ingredients make up more of it.
+   */
+
+  const ingredientCoverage =
+    recipeIngredientCount > 0
+
+      ? matchCount /
+        recipeIngredientCount
+
+      : 0;
+
+
+  /*
+   * SMART SCORE
+   *
+   * Match count is overwhelmingly
+   * important.
+   *
+   * Coverage and search overlap
+   * break ties.
+   */
+
+  let score = 0;
+
+
+  score +=
+    matchCount * 10000;
+
+
+  score +=
+    matchPercentage * 1000;
+
+
+  score +=
+    ingredientCoverage * 300;
+
+
+  score +=
+    searchOverlap * 100;
+
+
+  /*
+   * Small bonus for recipes where
+   * the user's ingredients make up
+   * a meaningful portion of the dish.
+   */
+
+  if (
+    matchCount >= 2 &&
+    ingredientCoverage >= 0.5
+  ) {
+
+    score += 150;
+
+  }
+
+
+  if (
+    matchCount ===
+    totalFridgeIngredients
+  ) {
+
+    score += 1000;
+
+  }
 
 
   return {
@@ -847,13 +982,22 @@ function scoreRecipe(
       missing,
 
     matchCount:
-      matched.length,
+      matchCount,
 
     totalIngredients:
-      userIngredients.length,
+      totalFridgeIngredients,
+
+    matchPercentage:
+      matchPercentage,
+
+    ingredientCoverage:
+      ingredientCoverage,
 
     searchOverlap:
-      searchOverlap
+      searchOverlap,
+
+    score:
+      score
 
   };
 
@@ -879,25 +1023,34 @@ async function searchOnlineRecipes(
   }
 
 
+  /*
+   * Convert the user's entries into
+   * canonical ingredient groups.
+   */
+
   const userIngredients =
     [
       ...new Set(
 
         ingredients
 
-          .map(function(item) {
+          .map(
+            function(item) {
 
-            return getCanonicalIngredient(
-              item
-            );
+              return getCanonicalIngredient(
+                item
+              );
 
-          })
+            }
+          )
 
-          .filter(function(item) {
+          .filter(
+            function(item) {
 
-            return item.length > 0;
+              return item.length > 0;
 
-          })
+            }
+          )
 
       )
     ];
@@ -918,17 +1071,26 @@ async function searchOnlineRecipes(
   );
 
 
+  /*
+   * Stores unique candidate recipes.
+   */
+
   const candidateMap =
     new Map();
 
+
+  /*
+   * Tracks how many different
+   * ingredient searches returned
+   * each recipe.
+   */
 
   const candidateCounts =
     {};
 
 
   /*
-   * Search EVERY fridge ingredient
-   * before downloading recipe details.
+   * Search every fridge ingredient.
    */
 
   for (
@@ -951,30 +1113,32 @@ async function searchOnlineRecipes(
     );
 
 
-    meals.forEach(function(meal) {
+    meals.forEach(
+      function(meal) {
 
-      const id =
-        meal.idMeal;
+        const id =
+          meal.idMeal;
 
 
-      if (
-        !candidateMap.has(id)
-      ) {
+        if (
+          !candidateMap.has(id)
+        ) {
 
-        candidateMap.set(
-          id,
-          meal
-        );
+          candidateMap.set(
+            id,
+            meal
+          );
+
+        }
+
+
+        candidateCounts[id] =
+          (
+            candidateCounts[id] || 0
+          ) + 1;
 
       }
-
-
-      candidateCounts[id] =
-        (
-          candidateCounts[id] || 0
-        ) + 1;
-
-    });
+    );
 
   }
 
@@ -986,8 +1150,13 @@ async function searchOnlineRecipes(
 
 
   /*
-   * Recipes appearing in multiple
-   * ingredient searches come first.
+   * First put recipes found by
+   * multiple ingredient searches
+   * near the front.
+   *
+   * The actual recipe ingredient
+   * check later determines the final
+   * ranking.
    */
 
   candidates.sort(
@@ -997,6 +1166,7 @@ async function searchOnlineRecipes(
         candidateCounts[
           a.idMeal
         ] || 0;
+
 
       const countB =
         candidateCounts[
@@ -1031,10 +1201,7 @@ async function searchOnlineRecipes(
 
 
   /*
-   * IMPORTANT:
-   *
-   * We now inspect up to 100 candidates,
-   * rather than stopping at 12.
+   * Inspect up to 100 candidates.
    */
 
   const maxDetails =
@@ -1053,7 +1220,9 @@ async function searchOnlineRecipes(
 
 
   /*
-   * Download details in batches.
+   * Download details in batches
+   * to avoid sending too many
+   * requests simultaneously.
    */
 
   const batchSize =
@@ -1076,34 +1245,39 @@ async function searchOnlineRecipes(
     const details =
       await Promise.all(
 
-        batch.map(function(meal) {
+        batch.map(
+          function(meal) {
 
-          return getRecipeDetails(
-            meal.idMeal
-          );
+            return getRecipeDetails(
+              meal.idMeal
+            );
 
-        })
+          }
+        )
 
       );
 
 
-    details.forEach(function(recipe) {
+    details.forEach(
+      function(recipe) {
 
-      if (recipe) {
+        if (recipe) {
 
-        detailedRecipes.push(
-          recipe
-        );
+          detailedRecipes.push(
+            recipe
+          );
+
+        }
 
       }
-
-    });
+    );
 
   }
 
 
   /*
-   * Score actual ingredients.
+   * Score every recipe using the
+   * ACTUAL ingredient list.
    */
 
   const scored =
@@ -1121,35 +1295,22 @@ async function searchOnlineRecipes(
 
 
   /*
-   * Highest number of actual
-   * ingredient matches first.
+   * Final ranking.
+   *
+   * Highest score first.
    */
 
   scored.sort(
     function(a, b) {
 
-
       if (
-        b.matchCount !==
-        a.matchCount
+        b.score !==
+        a.score
       ) {
 
         return (
-          b.matchCount -
-          a.matchCount
-        );
-
-      }
-
-
-      if (
-        b.searchOverlap !==
-        a.searchOverlap
-      ) {
-
-        return (
-          b.searchOverlap -
-          a.searchOverlap
+          b.score -
+          a.score
         );
 
       }
@@ -1163,82 +1324,92 @@ async function searchOnlineRecipes(
   );
 
 
-  /*
-   * IMPORTANT:
-   *
-   * Return up to 48 results.
-   */
-
   const maxResults =
     options.maxResults || 48;
 
+
+  /*
+   * Convert into the format
+   * expected by index.html.
+   */
 
   return scored
     .slice(
       0,
       maxResults
     )
-    .map(function(item) {
+    .map(
+      function(item) {
 
-      return {
+        return {
 
-        id:
-          item.recipe.id,
+          id:
+            item.recipe.id,
 
-        name:
-          item.recipe.name,
+          name:
+            item.recipe.name,
 
-        category:
-          item.recipe.category,
+          category:
+            item.recipe.category,
 
-        area:
-          item.recipe.area,
+          area:
+            item.recipe.area,
 
-        image:
-          item.recipe.image,
+          image:
+            item.recipe.image,
 
-        source:
-          item.recipe.source,
+          source:
+            item.recipe.source,
 
-        youtube:
-          item.recipe.youtube,
+          youtube:
+            item.recipe.youtube,
 
-        description:
-          item.recipe.tags,
+          description:
+            item.recipe.tags,
 
-        ingredients:
-          item.recipe.ingredients,
+          ingredients:
+            item.recipe.ingredients,
 
-        instructions:
-          item.recipe.instructions,
+          instructions:
+            item.recipe.instructions,
 
-        matchedIngredients:
-          item.matched,
+          matchedIngredients:
+            item.matched,
 
-        missingIngredients:
-          item.missing,
+          missingIngredients:
+            item.missing,
 
-        matchCount:
-          item.matchCount,
+          matchCount:
+            item.matchCount,
 
-        totalIngredients:
-          item.totalIngredients,
+          totalIngredients:
+            item.totalIngredients,
 
-        searchOverlap:
-          item.searchOverlap,
+          matchPercentage:
+            item.matchPercentage,
 
-        online:
-          true
+          ingredientCoverage:
+            item.ingredientCoverage,
 
-      };
+          searchOverlap:
+            item.searchOverlap,
 
-    });
+          score:
+            item.score,
+
+          online:
+            true
+
+        };
+
+      }
+    );
 
 }
 
 
 /* ========================================================
-   CONVERT FOR APP
+   CONVERT ONLINE RECIPE FOR APP
    ======================================================== */
 
 function convertOnlineRecipeForApp(
@@ -1286,7 +1457,9 @@ function convertOnlineRecipeForApp(
         function(item) {
 
           return item.amount
+
             ? `${item.amount} ${item.name}`
+
             : item.name;
 
         }
@@ -1295,16 +1468,20 @@ function convertOnlineRecipeForApp(
     instructions:
       recipe.instructions
         .split(/\r?\n/)
-        .map(function(step) {
+        .map(
+          function(step) {
 
-          return step.trim();
+            return step.trim();
 
-        })
-        .filter(function(step) {
+          }
+        )
+        .filter(
+          function(step) {
 
-          return step.length > 0;
+            return step.length > 0;
 
-        }),
+          }
+        ),
 
     description:
       recipe.description ||
@@ -1331,8 +1508,17 @@ function convertOnlineRecipeForApp(
     totalIngredients:
       recipe.totalIngredients || 0,
 
+    matchPercentage:
+      recipe.matchPercentage || 0,
+
+    ingredientCoverage:
+      recipe.ingredientCoverage || 0,
+
     searchOverlap:
       recipe.searchOverlap || 0,
+
+    score:
+      recipe.score || 0,
 
     online:
       true
@@ -1370,5 +1556,5 @@ window.onlineRecipeSearch = {
 
 
 console.log(
-  "Online recipe search loaded - up to 48 results."
+  "Smart online recipe search loaded."
 );
