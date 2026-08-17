@@ -2,6 +2,11 @@
    ONLINE RECIPES
    Recipe search through Cloudflare Worker
    Only returns recipes with calorie information
+
+   IMPORTANT:
+   Searches each fridge ingredient separately so that
+   recipes containing multiple fridge ingredients can be
+   discovered and ranked correctly.
    ========================================================= */
 
 const RECIPE_WORKER_BASE =
@@ -375,8 +380,13 @@ function normalizeRecipeIngredients(
             item.amount ||
             "";
 
-          if (measure && name) {
+          if (
+            measure &&
+            name
+          ) {
+
             return `${measure} ${name}`;
+
           }
 
           return name;
@@ -714,11 +724,6 @@ function convert(
   }
 
 
-  /*
-   * The Cloudflare Worker already returns
-   * normalized recipe objects.
-   */
-
   const calories =
     extractCalories(
       recipe
@@ -813,34 +818,6 @@ function convert(
   }
 
 
-  let matchedIngredients =
-    Array.isArray(
-      recipe.matchedIngredients
-    )
-      ? recipe.matchedIngredients
-      : [];
-
-
-  if (
-    !matchedIngredients.length
-  ) {
-
-    matchedIngredients =
-      calculateMatches(
-        recipe,
-        window.__currentRecipeFridgeIngredients || []
-      );
-
-  }
-
-
-  const matchCount =
-    Number(
-      recipe.matchCount
-    ) ||
-    matchedIngredients.length;
-
-
   const id =
     recipe.id ||
     recipe.idMeal ||
@@ -908,73 +885,79 @@ function convert(
 
   return {
 
-    id:
+    id:id,
 
-      id,
+    name:name,
 
-    name:
+    category:category,
 
-      name,
+    area:area,
 
-    category:
+    image:image,
 
-      category,
+    source:source,
 
-    area:
+    youtube:youtube,
 
-      area,
+    ingredients:ingredients,
 
-    image:
+    instructions:instructions,
 
-      image,
+    calories:calories,
 
-    source:
+    protein:protein,
 
-      source,
-
-    youtube:
-
-      youtube,
-
-    ingredients:
-
-      ingredients,
-
-    instructions:
-
-      instructions,
-
-    calories:
-
-      calories,
-
-    protein:
-
-      protein,
-
-    difficulty:
-
-      "Online",
+    difficulty:"Online",
 
     tags:
-
       Array.isArray(recipe.tags)
         ? recipe.tags
         : [],
 
-    matchCount:
+    matchCount:0,
 
-      matchCount,
+    matchedIngredients:[],
 
-    matchedIngredients:
-
-      matchedIngredients,
-
-    online:
-
-      true
+    online:true
 
   };
+
+}
+
+
+/* =========================================================
+   SEARCH ONE INGREDIENT
+   ========================================================= */
+
+async function searchSingleIngredient(
+  ingredient
+) {
+
+  const url =
+    `${RECIPE_WORKER_BASE}/search?ingredients=${encodeURIComponent(
+      ingredient
+    )}`;
+
+
+  const data =
+    await fetchJSON(
+      url
+    );
+
+
+  if (
+    !data ||
+    !Array.isArray(
+      data.recipes
+    )
+  ) {
+
+    return [];
+
+  }
+
+
+  return data.recipes;
 
 }
 
@@ -1040,31 +1023,81 @@ async function search(
 
 
   /*
-   * Give the Worker the ingredients
-   * in one request.
+   * Store the current fridge ingredients so
+   * other functions can calculate matches.
    */
 
-  const ingredientsParam =
-    uniqueIngredients.join(",");
+  window.__currentRecipeFridgeIngredients =
+    uniqueIngredients;
 
 
-  const url =
-    `${RECIPE_WORKER_BASE}/search?ingredients=${encodeURIComponent(
-      ingredientsParam
-    )}`;
+  /*
+   * IMPORTANT:
+   *
+   * Instead of sending all ingredients in one
+   * request, search each ingredient separately.
+   *
+   * Example:
+   *
+   * mushrooms
+   * chicken
+   * rice
+   *
+   * This gives us three independent result sets
+   * that we can combine and match locally.
+   */
 
+  const searchResults =
+    await Promise.all(
+      uniqueIngredients.map(
+        function(ingredient) {
 
-  const data =
-    await fetchJSON(
-      url
+          return searchSingleIngredient(
+            ingredient
+          )
+            .catch(function(error) {
+
+              console.error(
+                "Online recipe search failed for:",
+                ingredient,
+                error
+              );
+
+              return [];
+
+            });
+
+        }
+      )
     );
 
 
+  /*
+   * Combine all recipe results.
+   */
+
+  const allRecipes = [];
+
+
+  searchResults.forEach(
+    function(recipeArray) {
+
+      recipeArray.forEach(
+        function(recipe) {
+
+          allRecipes.push(
+            recipe
+          );
+
+        }
+      );
+
+    }
+  );
+
+
   if (
-    !data ||
-    !Array.isArray(
-      data.recipes
-    )
+    !allRecipes.length
   ) {
 
     return [];
@@ -1073,61 +1106,77 @@ async function search(
 
 
   /*
-   * Make the fridge ingredients available
-   * to convert() for match calculation.
+   * Convert and calculate matching ingredients
+   * locally.
+   *
+   * We intentionally DO NOT trust the matchCount
+   * returned by the Worker because the Worker may
+   * have searched only one ingredient.
    */
 
-  window.__currentRecipeFridgeIngredients =
-    uniqueIngredients;
+  const results = [];
 
 
-  const results =
-    data.recipes
+  allRecipes.forEach(
+    function(rawRecipe) {
 
-      .map(function(recipe) {
-
-        return convert(
-          recipe
+      const recipe =
+        convert(
+          rawRecipe
         );
 
-      })
 
-      .filter(function(recipe) {
+      if (!recipe) {
 
-        return recipe !== null;
-
-      });
-
-
-  /*
-   * Make sure match information exists
-   * even if the Worker did not provide it.
-   */
-
-  results.forEach(
-    function(recipe) {
-
-      if (
-        !Array.isArray(
-          recipe.matchedIngredients
-        ) ||
-        !recipe.matchedIngredients.length
-      ) {
-
-        recipe.matchedIngredients =
-          calculateMatches(
-            recipe,
-            uniqueIngredients
-          );
+        return;
 
       }
 
 
+      const matchedIngredients =
+        calculateMatches(
+          rawRecipe,
+          uniqueIngredients
+        );
+
+
+      /*
+       * If the raw recipe doesn't expose its
+       * ingredients correctly, try the converted
+       * recipe as a fallback.
+       */
+
+      const finalMatches =
+        matchedIngredients.length
+          ? matchedIngredients
+          : calculateMatches(
+              recipe,
+              uniqueIngredients
+            );
+
+
+      recipe.matchedIngredients =
+        finalMatches;
+
+
       recipe.matchCount =
-        Number(
-          recipe.matchCount
-        ) ||
-        recipe.matchedIngredients.length;
+        finalMatches.length;
+
+
+      /*
+       * Only keep recipes that match at least
+       * one ingredient.
+       */
+
+      if (
+        recipe.matchCount > 0
+      ) {
+
+        results.push(
+          recipe
+        );
+
+      }
 
     }
   );
@@ -1135,10 +1184,16 @@ async function search(
 
   /*
    * Sort strongest matches first.
+   *
+   * 3/3 ingredients
+   * 2/3 ingredients
+   * 1/3 ingredients
+   *
+   * Then sort by calorie information/name.
    */
 
   results.sort(
-    function(a, b) {
+    function(a,b) {
 
       if (
         b.matchCount !==
@@ -1148,6 +1203,26 @@ async function search(
         return (
           b.matchCount -
           a.matchCount
+        );
+
+      }
+
+
+      const calorieA =
+        Number(a.calories) || 0;
+
+      const calorieB =
+        Number(b.calories) || 0;
+
+
+      if (
+        calorieA !==
+        calorieB
+      ) {
+
+        return (
+          calorieA -
+          calorieB
         );
 
       }
@@ -1177,7 +1252,9 @@ async function search(
         String(
           recipe.id ||
           recipe.name
-        );
+        )
+          .trim()
+          .toLowerCase();
 
 
       if (
@@ -1199,6 +1276,14 @@ async function search(
   );
 
 
+  /*
+   * Save the converted results for getDetails().
+   */
+
+  window.__onlineRecipeCache =
+    uniqueResults;
+
+
   return uniqueResults.slice(
     0,
     maxResults
@@ -1214,14 +1299,6 @@ async function search(
 async function getDetails(
   recipeId
 ) {
-
-  /*
-   * The Worker already returns the
-   * complete recipe information used
-   * by the planner.
-   *
-   * Search the current results first.
-   */
 
   const cached =
     window.__onlineRecipeCache || [];
@@ -1259,20 +1336,12 @@ async function getDetails(
 
 window.onlineRecipeSearch = {
 
-  search:
+  search:search,
 
-    search,
+  getDetails:getDetails,
 
-  getDetails:
+  convert:convert,
 
-    getDetails,
-
-  convert:
-
-    convert,
-
-  normalizeIngredient:
-
-    normalizeIngredient
+  normalizeIngredient:normalizeIngredient
 
 };
