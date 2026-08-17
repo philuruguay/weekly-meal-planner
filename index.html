@@ -1715,17 +1715,103 @@ maxResults:48
 );
 
 
+/*
+The Cloudflare Worker now returns recipes already
+normalized for this application.
+
+Previously we called:
+
+recipe -> convert(recipe)
+
+But convert() is designed for the older raw
+TheMealDB recipe format. The Worker response
+already contains fields such as:
+
+name
+description
+ingredients
+instructions
+calories
+protein
+matchedIngredients
+matchCount
+
+Running convert() a second time caused valid Worker
+recipes to become null, which made the interface
+incorrectly say that no recipes were found.
+*/
+
+
+let recipeArray;
+
+
+if(Array.isArray(onlineResults)){
+
+recipeArray =
+onlineResults;
+
+}
+else if(
+onlineResults &&
+Array.isArray(onlineResults.recipes)
+){
+
+recipeArray =
+onlineResults.recipes;
+
+}
+else{
+
+recipeArray = [];
+
+}
+
+
 currentOnlineRecipes =
-onlineResults
+recipeArray
 .map(function(recipe){
 
-return window.onlineRecipeSearch
-.convert(recipe);
+/*
+If the Worker has already normalized the recipe,
+use it directly.
+*/
+
+if(
+recipe &&
+recipe.name &&
+Array.isArray(recipe.ingredients)
+){
+
+return recipe;
+
+}
+
+
+/*
+Fallback for an older response format.
+If an older version of onlineRecipes.js happens
+to return raw TheMealDB recipes, retain the
+existing conversion behavior.
+*/
+
+if(
+window.onlineRecipeSearch &&
+typeof window.onlineRecipeSearch.convert === "function"
+){
+
+return window.onlineRecipeSearch.convert(recipe);
+
+}
+
+
+return null;
 
 })
 .filter(function(recipe){
 
-return recipe !== null;
+return recipe !== null &&
+recipe !== undefined &&
+recipe.name;
 
 });
 
@@ -1736,7 +1822,10 @@ renderOnlineRecipes();
 
 catch(error){
 
-console.error(error);
+console.error(
+"Online recipe search failed:",
+error
+);
 
 status.innerHTML =
 
@@ -2353,12 +2442,6 @@ recipe.name,
 
 type:
 mealType,
-
-/*
-Online sources generally do not provide reliable
-calorie/protein information, so we intentionally
-do not invent numbers.
-*/
 
 calories:null,
 
